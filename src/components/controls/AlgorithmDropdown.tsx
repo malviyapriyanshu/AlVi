@@ -40,7 +40,7 @@ export const DropdownWrapper: React.FC<DropdownWrapperProps> = ({
     <div className="flex flex-col gap-2 relative" ref={dropdownRef}>
       <label className="text-sm font-medium text-slate-400">{label}</label>
       <button type="button" disabled={disabled} onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-64 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-medium transition-all duration-200 outline-none
+        className={`flex items-center justify-between w-full sm:w-64 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-medium transition-all duration-200 outline-none
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-500 cursor-pointer'}
           ${isOpen ? 'ring-2 ring-indigo-500/20 border-indigo-500' : 'shadow-sm'}`}>
         <span className={selectedOption ? 'text-white' : 'text-slate-500'}>{selectedOption ? selectedOption.name : 'Select Algorithm'}</span>
