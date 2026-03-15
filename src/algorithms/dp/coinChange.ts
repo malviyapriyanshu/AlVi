@@ -24,7 +24,8 @@ export const coinChange = (coins: number[], amount: number): AnimationStep[] => 
   steps.push({ 
     type: 'table_init', 
     table: [...dp], 
-    explanation: `Initialize dp table. dp[0]=0, others set to ∞` 
+    explanation: `Initialize dp table. dp[0]=0, others set to ∞`,
+    line: 0 // dp[0] = 0
   });
 
   for (let i = 1; i <= amount; i++) {
@@ -34,7 +35,8 @@ export const coinChange = (coins: number[], amount: number): AnimationStep[] => 
             type: 'table_access', 
             indices: [i - coin, i], 
             table: [...dp],
-            explanation: `Checking if using coin ${coin} improves current solution for amount ${i}` 
+            explanation: `Checking if using coin ${coin} improves current solution for amount ${i}`,
+            line: 3 // if i >= c: dp[i] = min(dp[i], dp[i-c] + 1)
         });
         const res = dp[i - coin] + 1;
         if (res < dp[i]) {
@@ -44,7 +46,8 @@ export const coinChange = (coins: number[], amount: number): AnimationStep[] => 
             indices: [i], 
             table: [...dp],
             value: dp[i], 
-            explanation: `Amount ${i}: Found better solution using coin ${coin}. New min coins: ${dp[i]}` 
+            explanation: `Amount ${i}: Found better solution using coin ${coin}. New min coins: ${dp[i]}`,
+            line: 3
           });
         }
       }

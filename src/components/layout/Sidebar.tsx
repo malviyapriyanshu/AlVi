@@ -1,48 +1,75 @@
 import React from 'react';
+import { BookOpen, Zap, Code2, Lightbulb } from 'lucide-react';
+import { AlgorithmOverviewCard } from '../learning/AlgorithmOverviewCard';
+import { PseudocodeViewer } from '../learning/PseudocodeViewer';
+import { RealWorldAnalogy } from '../learning/RealWorldAnalogy';
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: any) => void;
-  tabs: { id: string; label: string; icon: React.ReactNode }[];
+  algorithm: any;
+  problem: any;
+  currentStep?: any;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tabs }) => {
-  return (
-    <aside className="hidden lg:flex flex-col w-64 border-r border-slate-800/60 bg-slate-900/50 backdrop-blur-sm p-4 gap-1.5 h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar">
-      <div className="mb-4 px-4 py-2">
-         <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Navigation</span>
+const ComplexityAnalysis: React.FC<{ complexity: any }> = ({ complexity }) => (
+  <div className="bg-slate-800/40 rounded-3xl p-6 border border-slate-700/30 flex flex-col gap-4">
+    <div className="flex items-center gap-2">
+       <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Complexity Analysis</h4>
+    </div>
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <div className="text-[9px] font-bold text-slate-600 uppercase mb-1">Time (Avg)</div>
+        <div className="text-sm font-mono font-bold text-indigo-400">{complexity.time.average || complexity.time}</div>
       </div>
-      
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={`group flex items-center justify-between px-4 py-3.5 rounded-2xl text-[13px] font-bold transition-all duration-300
-            ${activeTab === tab.id 
-              ? 'bg-indigo-600 text-white shadow-[0_10px_25px_rgba(79,70,229,0.3)] ring-1 ring-indigo-400/50 scale-[1.02]' 
-              : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100 hover:translate-x-1'}`}
-        >
-          <div className="flex items-center gap-3">
-             <div className={`p-1 rounded-lg transition-colors ${activeTab === tab.id ? 'text-white' : 'text-slate-500 group-hover:text-indigo-400'}`}>
-                {React.cloneElement(tab.icon as React.ReactElement, { size: 18 } as any)}
-             </div>
-             <span>{tab.label}</span>
-          </div>
-          {activeTab === tab.id && (
-              <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_white]" />
-          )}
-        </button>
-      ))}
+      <div>
+        <div className="text-[9px] font-bold text-slate-600 uppercase mb-1">Space</div>
+        <div className="text-sm font-mono font-bold text-emerald-400">{complexity.space}</div>
+      </div>
+    </div>
+  </div>
+);
 
-      <div className="mt-auto px-4 py-6 border-t border-slate-800/60">
-          <div className="flex flex-col gap-1">
-             <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Environment</span>
-             <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-mono font-bold text-slate-400">Local Dev Server</span>
-             </div>
-          </div>
+export const Sidebar: React.FC<SidebarProps> = ({ algorithm, problem, currentStep }) => {
+  if (!algorithm) return (
+    <div className="flex flex-col items-center justify-center h-full opacity-20 p-12 text-center">
+       <BookOpen size={48} className="mb-4" />
+       <p className="text-sm font-bold uppercase tracking-widest">Select an Algorithm</p>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-left-4 duration-700">
+      <div className="flex items-center gap-3">
+         <div className="p-2 bg-indigo-600/10 rounded-xl text-indigo-500 border border-indigo-500/20">
+            <BookOpen size={18} />
+         </div>
+         <h2 className="text-lg font-black tracking-tight">Theory & Specs</h2>
       </div>
-    </aside>
+
+      <div className="flex flex-col gap-6">
+        <AlgorithmOverviewCard info={algorithm.info} leetcodeLink={problem?.link} />
+        
+        <ComplexityAnalysis complexity={algorithm.info.complexity} />
+        
+        <div className="flex flex-col gap-4">
+           <div className="flex items-center gap-2 px-1">
+              <Code2 size={14} className="text-slate-500" />
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Implementation</span>
+           </div>
+           <PseudocodeViewer 
+              code={algorithm.info.pseudocode} 
+              highlightLine={currentStep?.line}
+           />
+        </div>
+
+        <div className="flex flex-col gap-4">
+           <div className="flex items-center gap-2 px-1">
+              <Lightbulb size={14} className="text-slate-500" />
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Intuition</span>
+           </div>
+           <RealWorldAnalogy analogy={algorithm.info.analogy} />
+        </div>
+      </div>
+    </div>
   );
 };

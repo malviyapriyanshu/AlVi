@@ -18,7 +18,7 @@ export const ProblemPanel: React.FC<Props> = ({ problem }) => {
         </a>
       </div>
       <h4 className="text-white font-semibold mb-2">{problem.title}</h4>
-      <p className="text-sm text-slate-400 leading-relaxed mb-4">{problem.description}</p>
+      <div className="text-sm text-slate-400 leading-relaxed mb-4">{problem.description}</div>
       <div className="space-y-2">
         <h5 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Solution Walkthrough</h5>
         {problem.solutionSteps.map((step, idx) => (

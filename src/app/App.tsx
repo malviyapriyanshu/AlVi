@@ -22,13 +22,6 @@ import { TreeCanvas } from '../visualization/tree/TreeCanvas';
 import { DPTable } from '../visualization/dp/DPTable';
 
 // Components
-import { AlgorithmDropdown } from '../components/controls/AlgorithmDropdown';
-import { SpeedSlider } from '../components/controls/SpeedSlider';
-import { ControlPanel } from '../components/controls/ControlPanel';
-import { AlgorithmOverviewCard } from '../components/learning/AlgorithmOverviewCard';
-import { LogicBreakdown } from '../components/learning/LogicBreakdown';
-import { RealWorldAnalogy } from '../components/learning/RealWorldAnalogy';
-import { PseudocodeViewer } from '../components/learning/PseudocodeViewer';
 import { CurrentStepExplanation } from '../components/walkthrough/CurrentStepExplanation';
 import { ComparisonCanvas } from '../components/comparison/ComparisonCanvas';
 import { CodeEditor } from '../components/editor/CodeEditor';
@@ -36,9 +29,11 @@ import { InputEditor } from '../components/playground/InputEditor';
 import { QuizCard } from '../components/quiz/QuizCard';
 import { LearningPathPanel } from '../components/learning/LearningPath';
 import { ProblemPanel } from '../components/problems/ProblemPanel';
+import { NavRail } from '../components/layout/NavRail';
 
 // Utils
 import { RotateCcw } from 'lucide-react';
+import React from 'react';
 import { generateRandomArray } from '../utils/generateRandomArray';
 import { buildSampleBST } from '../algorithms/tree/binarySearchTree';
 
@@ -55,6 +50,13 @@ const SAMPLE_GRAPH = {
   ],
 };
 
+const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
+  <div className="flex items-center gap-2">
+    <div className={`w-3 h-3 rounded-full ${color} shadow-lg`} />
+    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
+  </div>
+);
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('visualizer');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -65,7 +67,6 @@ export default function App() {
   const { steps, currentStepIndex, reset: resetPlayback } = usePlaybackStore();
   const { runSelected, stop } = useAlgorithmRunner();
   
-  // Single instance of the driver to avoid competition between hooks
   useAnimationDriver();
   const { nextStep, prevStep } = useAnimationActions();
   
@@ -76,7 +77,6 @@ export default function App() {
 
   const { array: visualizedArray, explanation: arrayExplanation } = useAlgorithmVisualization(array, steps, currentStepIndex);
 
-  // Sync explanations across different algorithm types
   const currentExplanation = useMemo(() => {
     if (activeTab === 'visualizer') return arrayExplanation;
     return steps[currentStepIndex]?.explanation;
@@ -97,12 +97,6 @@ export default function App() {
     handleNewArray();
   }, [handleNewArray]);
 
-  /**
-   * Coordination Logic: 
-   * Ensure the selected algorithm matches the active tab's context.
-   */
-  
-  // 1. When algorithm changes, ensure we are on the right tab
   useEffect(() => {
     if (!entry) return;
     const cat = entry.info.category.toLowerCase();
@@ -112,14 +106,12 @@ export default function App() {
     else if (cat === 'tree') targetTab = 'tree';
     else if (cat === 'dp') targetTab = 'dp';
     
-    // Only switch if the user is currently in a visualizer mode
     const visualizerTabs: TabId[] = ['visualizer', 'graph', 'tree', 'dp'];
     if (visualizerTabs.includes(activeTab) && activeTab !== targetTab) {
         setActiveTab(targetTab);
     }
-  }, [selectedAlgorithmId, entry]);
+  }, [selectedAlgorithmId, entry, activeTab]);
 
-  // 2. When user manually switches tab via sidebar, pick a default algorithm for that tab
   const handleTabChange = (newTab: TabId) => {
     setActiveTab(newTab);
     
@@ -132,7 +124,6 @@ export default function App() {
     
     const targetCategory = tabToCategoryMap[newTab];
     if (targetCategory && entry?.info.category.toLowerCase() !== targetCategory) {
-        // Find first algorithm in the registry that matches this category
         const firstInCat = Object.values(algorithmRegistry).find(a => a.info.category.toLowerCase() === targetCategory);
         if (firstInCat) {
             setSelectedAlgorithmId(firstInCat.id);
@@ -160,123 +151,123 @@ export default function App() {
   const isVisualizationTab = ['visualizer', 'graph', 'tree', 'dp'].includes(activeTab);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-50 flex flex-col font-sans selection:bg-indigo-500/30">
-      <Navbar overallProgress={overallProgress} onMenuToggle={() => setIsMenuOpen(!isMenuOpen)} isMenuOpen={isMenuOpen} />
+    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-indigo-500/30 overflow-hidden">
+      <Navbar 
+        overallProgress={overallProgress} 
+        onMenuToggle={() => setIsMenuOpen(!isMenuOpen)} 
+        isMenuOpen={isMenuOpen}
+        selectedAlgorithmId={selectedAlgorithmId}
+        onAlgorithmChange={setSelectedAlgorithmId}
+        onRun={handleRun}
+        onStop={stop}
+        onStepForward={nextStep}
+        onStepBackward={prevStep}
+        onReset={handleNewArray}
+        isPlaying={!!steps.length && currentStepIndex < steps.length - 1}
+      />
       
-      <div className="flex-1 flex max-w-7xl w-full mx-auto overflow-hidden">
-        <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} tabs={TABS as any} />
-        
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {isVisualizationTab && (
-            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex flex-col xl:flex-row gap-8 items-stretch xl:items-end justify-between">
-                <div className="flex flex-col sm:flex-row gap-8 flex-1">
-                  <AlgorithmDropdown 
-                    label="Active Algorithm" 
-                    categories={algorithmCategories} 
-                  />
-                  <SpeedSlider />
-                </div>
-                <div className="flex items-center gap-3 self-end xl:self-auto">
-                    <button onClick={handleNewArray} className="group flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl border border-slate-700 text-sm font-black transition-all shadow-xl active:scale-95 whitespace-nowrap">
-                       <RotateCcw size={16} className="text-indigo-400 group-rotate-[-45deg] transition-transform" />
-                       <span>Regenerate Data</span>
-                    </button>
-                </div>
-              </div>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Far Left: Navigation Rail */}
+        <NavRail activeTab={activeTab} onTabChange={handleTabChange} />
 
-              {/* Canvas Area */}
-              <div className="bg-slate-900 shadow-[0_30px_100px_rgba(0,0,0,0.5)] rounded-[2.5rem] p-4 lg:p-10 border border-slate-700/40 min-h-[500px] flex flex-col relative overflow-hidden group">
-                {/* Visualizer Blueprint Background */}
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-                     style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-                <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
-                     style={{ backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)', backgroundSize: '150px 150px' }} />
-                
-                <div className="absolute top-6 right-8 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500/40 bg-indigo-500/5 px-4 py-1.5 rounded-full border border-indigo-500/10 z-10 backdrop-blur-md">
-                   {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Simulation Matrix
-                </div>
-                
-                <div className="flex-1 flex flex-col relative z-0">
-                    {activeTab === 'visualizer' && (
-                      <ArrayCanvas array={visualizedArray} maxValue={200} />
-                    )}
-                    {activeTab === 'graph' && (
-                       <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />
-                    )}
-                    {activeTab === 'tree' && (
-                        <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />
-                    )}
-                    {activeTab === 'dp' && (
-                      <DPTable steps={steps} currentStepIndex={currentStepIndex} />
-                    )}
-                </div>
-              </div>
+        {/* Left Side: Educational Rail */}
+        <aside className="hidden lg:flex flex-col w-80 border-r border-slate-800 bg-slate-900 overflow-y-auto p-6 custom-scrollbar animate-slide-left">
+          <Sidebar 
+            algorithm={entry} 
+            problem={problem} 
+            currentStep={steps[currentStepIndex]} 
+          />
+        </aside>
 
-              {/* Playback & Step Info */}
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <div className="lg:col-span-2">
-                  <ControlPanel 
-                    onPlay={handleRun}
-                    onStop={stop}
-                    onStepForward={nextStep} 
-                    onStepBackward={prevStep}
-                    onRestart={handleNewArray}
-                  />
-                </div>
-                <div className="lg:col-span-3">
-                  <CurrentStepExplanation explanation={currentExplanation} />
-                </div>
-              </div>
-
-              {/* Educational Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 flex flex-col gap-6">
-                  {entry && <AlgorithmOverviewCard info={entry.info} leetcodeLink={problem?.link} />}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {entry && <LogicBreakdown steps={entry.info.stepByStep} intuition={entry.info.intuition} whenToUse={entry.info.whenToUse} />}
-                    <div className="flex flex-col gap-6">
-                      {entry && <RealWorldAnalogy analogy={entry.info.analogy} />}
-                      {entry && <PseudocodeViewer code={entry.info.pseudocode} />}
-                    </div>
+        {/* Center: Visualization Canvas */}
+        <main className="flex-1 bg-slate-950 relative overflow-hidden flex flex-col items-center justify-center p-8 animate-premium">
+          {isVisualizationTab ? (
+            <div className="max-w-6xl mx-auto w-full flex flex-col gap-10">
+              <section className="relative group">
+                <div className="bg-slate-900 shadow-premium rounded-[32px] p-8 lg:p-12 border border-slate-800/60 min-h-[600px] flex flex-col relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                       style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+                  
+                  <div className="absolute top-6 right-8 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500/50 bg-indigo-500/10 px-4 py-1.5 rounded-full border border-indigo-500/20 z-10 backdrop-blur-md">
+                     {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Simulation
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col relative z-0 justify-center">
+                      {activeTab === 'visualizer' && <ArrayCanvas array={visualizedArray} maxValue={200} />}
+                      {activeTab === 'graph' && <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />}
+                      {activeTab === 'tree' && <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />}
+                      {activeTab === 'dp' && <DPTable steps={steps} currentStepIndex={currentStepIndex} />}
+                  </div>
+                  
+                  <div className="mt-8 pt-6 border-t border-slate-800/50 flex flex-wrap gap-6 justify-center">
+                    <LegendItem color="bg-indigo-500" label="Default" />
+                    <LegendItem color="bg-yellow-400" label="Comparison" />
+                    <LegendItem color="bg-rose-500" label="Modification / Swap" />
+                    <LegendItem color="bg-emerald-500" label="Sorted / Result" />
+                    <LegendItem color="bg-blue-400" label="Pointers" />
                   </div>
                 </div>
-                <div>
-                  {problem && <ProblemPanel problem={problem} />}
-                </div>
-              </div>
-            </div>
-          )}
 
-          {activeTab === 'compare' && <ComparisonCanvas array={array} algorithms={[]} />}
-          {activeTab === 'code' && <CodeEditor onGenerateSteps={() => {}} />}
-          {activeTab === 'playground' && <InputEditor onApply={() => {}} />}
-          {activeTab === 'quiz' && (
-            <div className="max-w-2xl mx-auto w-full py-8">
-              <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />
+                <button 
+                  onClick={handleNewArray} 
+                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 group flex items-center gap-3 px-8 py-4 bg-slate-850 hover:bg-slate-800 rounded-2xl border border-slate-700 text-sm font-black transition-all shadow-2xl active:scale-95 whitespace-nowrap z-20"
+                >
+                   <RotateCcw size={18} className="text-indigo-400 group-hover:rotate-[-180deg] transition-transform duration-500" />
+                   <span>Regenerate Dataset</span>
+                </button>
+              </section>
+
+              {problem && (
+                <div className="mt-8">
+                  <ProblemPanel problem={problem} />
+                </div>
+              )}
             </div>
-          )}
-          
-          {activeTab === 'paths' && (
-            <div className="flex flex-col gap-8">
-               <div className="bg-slate-800/40 rounded-3xl p-8 border border-slate-700/50 flex items-center justify-between">
-                 <div>
-                   <h2 className="text-4xl font-black mb-2">{overallProgress}% Path Complete</h2>
-                   <p className="text-slate-400">Keep going! You're mastering the fundamental algorithms.</p>
-                 </div>
-                 <div className="w-32 h-32 rounded-full border-8 border-slate-700 flex items-center justify-center relative">
-                    <span className="text-2xl font-black">{overallProgress}%</span>
-                    <svg className="absolute inset-0 w-full h-full -rotate-90">
-                      <circle cx="64" cy="64" r="56" fill="transparent" stroke="#6366f1" strokeWidth="8" strokeDasharray="351.85" strokeDashoffset={351.85 * (1 - overallProgress/100)} strokeLinecap="round" />
-                    </svg>
-                 </div>
-               </div>
-               <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id) => { setSelectedAlgorithmId(id); setActiveTab('visualizer'); }} />
+          ) : (
+            <div className="h-full">
+              {activeTab === 'compare' && <ComparisonCanvas array={array} algorithms={[]} />}
+              {activeTab === 'code' && <CodeEditor onGenerateSteps={() => {}} />}
+              {activeTab === 'playground' && <InputEditor onApply={() => {}} />}
+              {activeTab === 'quiz' && (
+                <div className="max-w-2xl mx-auto w-full py-8">
+                  <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />
+                </div>
+              )}
+              {activeTab === 'paths' && (
+                <div className="flex flex-col gap-8">
+                   <div className="bg-slate-850 rounded-3xl p-8 border border-slate-700/50 flex items-center justify-between shadow-premium">
+                     <div>
+                       <h2 className="text-4xl font-black mb-2">{overallProgress}% Path Complete</h2>
+                       <p className="text-slate-400">Keep going! You're mastering the fundamental algorithms.</p>
+                     </div>
+                     <div className="w-32 h-32 rounded-full border-8 border-slate-800 flex items-center justify-center relative">
+                        <span className="text-2xl font-black">{overallProgress}%</span>
+                        <svg className="absolute inset-0 w-full h-full -rotate-90">
+                          <circle cx="64" cy="64" r="56" fill="transparent" stroke="#6366f1" strokeWidth="8" strokeDasharray="351.85" strokeDashoffset={351.85 * (1 - overallProgress/100)} strokeLinecap="round" />
+                        </svg>
+                     </div>
+                   </div>
+                    <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id: string) => { setSelectedAlgorithmId(id); setActiveTab('visualizer'); }} />
+                </div>
+              )}
             </div>
           )}
         </main>
-      </div>
 
+        <aside className="hidden xl:flex flex-col w-96 border-l border-slate-800 bg-slate-900 p-6 overflow-y-auto custom-scrollbar">
+          {isVisualizationTab && (
+            <div className="flex flex-col h-full">
+              <div className="mb-8 font-black">
+                <span className="text-[10px] text-slate-500 uppercase tracking-[0.3em]">Simulation Logic</span>
+                <h3 className="text-xl mt-2">Walkthrough</h3>
+              </div>
+              <div className="flex-1">
+                 <CurrentStepExplanation explanation={currentExplanation} />
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
       <Footer />
     </div>
   );

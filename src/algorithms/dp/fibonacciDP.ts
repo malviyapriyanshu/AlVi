@@ -25,7 +25,8 @@ export const fibonacciDP = (n: number): AnimationStep[] => {
   steps.push({ 
     type: 'table_init', 
     table: [...dp], 
-    explanation: `Start with base cases Fib(0)=0, Fib(1)=1` 
+    explanation: `Start with base cases Fib(0)=0, Fib(1)=1`,
+    line: 0 // memo = [0, 1]
   });
 
   for (let i = 2; i <= n; i++) {
@@ -33,7 +34,8 @@ export const fibonacciDP = (n: number): AnimationStep[] => {
       type: 'table_access', 
       indices: [i - 1, i - 2], 
       table: [...dp],
-      explanation: `Calculating Fib(${i}) using Fib(${i - 1}) and Fib(${i - 2})` 
+      explanation: `Calculating Fib(${i}) using Fib(${i - 1}) and Fib(${i - 2})`,
+      line: 2 // memo[i] = memo[i-1] + memo[i-2]
     });
     dp[i] = dp[i - 1] + dp[i - 2];
     steps.push({ 
@@ -41,7 +43,8 @@ export const fibonacciDP = (n: number): AnimationStep[] => {
       indices: [i], 
       table: [...dp],
       value: dp[i], 
-      explanation: `Fib(${i}) = ${dp[i]}` 
+      explanation: `Fib(${i}) = ${dp[i]}`,
+      line: 2
     });
   }
   return steps;

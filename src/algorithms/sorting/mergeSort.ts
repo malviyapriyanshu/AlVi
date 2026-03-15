@@ -30,12 +30,29 @@ export const mergeSort = (array: number[]): AnimationStep[] => {
     let i = 0, j = 0, k = start;
 
     while (i < leftArr.length && j < rightArr.length) {
-      steps.push({ type: 'compare', indices: [start + i, mid + 1 + j], explanation: `Comparing sub-array elements` });
+      steps.push({ 
+        type: 'compare', 
+        indices: [start + i, mid + 1 + j], 
+        explanation: `Comparing sub-array elements`,
+        line: 5 // merge(L, R) - active comparison
+      });
       if (leftArr[i] <= rightArr[j]) {
-        steps.push({ type: 'overwrite', indices: [k], value: leftArr[i], explanation: `Placing ${leftArr[i]} from left half` });
+        steps.push({ 
+          type: 'overwrite', 
+          indices: [k], 
+          value: leftArr[i], 
+          explanation: `Placing ${leftArr[i]} from left half`,
+          line: 5
+        });
         arr[k++] = leftArr[i++];
       } else {
-        steps.push({ type: 'overwrite', indices: [k], value: rightArr[j], explanation: `Placing ${rightArr[j]} from right half` });
+        steps.push({ 
+          type: 'overwrite', 
+          indices: [k], 
+          value: rightArr[j], 
+          explanation: `Placing ${rightArr[j]} from right half`,
+          line: 5
+        });
         arr[k++] = rightArr[j++];
       }
     }

@@ -12,7 +12,7 @@ export const RealWorldAnalogy: React.FC<Props> = ({ analogy }) => (
     </div>
     <div>
       <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Real-World Analogy</h3>
-      <p className="text-sm text-slate-300 leading-relaxed italic">"{analogy}"</p>
+      <div className="text-sm text-slate-300 leading-relaxed italic">"{analogy}"</div>
     </div>
   </div>
 );

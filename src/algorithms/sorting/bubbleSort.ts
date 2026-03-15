@@ -26,9 +26,19 @@ export const bubbleSort = (array: number[]): AnimationStep[] => {
 
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n - i - 1; j++) {
-      steps.push({ type: 'compare', indices: [j, j + 1], explanation: `Comparing ${arr[j]} and ${arr[j + 1]}` });
+      steps.push({ 
+        type: 'compare', 
+        indices: [j, j + 1], 
+        explanation: `Comparing ${arr[j]} and ${arr[j + 1]}`,
+        line: 2 // if arr[j] > arr[j+1]
+      });
       if (arr[j] > arr[j + 1]) {
-        steps.push({ type: 'swap', indices: [j, j + 1], explanation: `Swapping ${arr[j]} and ${arr[j + 1]}` });
+        steps.push({ 
+          type: 'swap', 
+          indices: [j, j + 1], 
+          explanation: `Swapping ${arr[j]} and ${arr[j + 1]}`,
+          line: 3 // swap(arr[j], arr[j+1])
+        });
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
       }
     }

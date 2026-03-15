@@ -25,7 +25,12 @@ export const inorderTraversal = (root: TreeNode): AnimationStep[] => {
   const traverse = (node: TreeNode | null | undefined) => {
     if (!node) return;
 
-    steps.push({ type: 'highlight_node', nodeId: node.id, explanation: `Moving to left child of ${node.val}` });
+    steps.push({ 
+      type: 'highlight_node', 
+      nodeId: node.id, 
+      explanation: `Moving to left child of ${node.val}`,
+      line: 2 // Corresponds to traverse(node.left)
+    });
     traverse(node.left);
 
     visited.push(node.id);
@@ -33,10 +38,16 @@ export const inorderTraversal = (root: TreeNode): AnimationStep[] => {
       type: 'visit_node', 
       nodeId: node.id, 
       visitedNodes: [...visited],
-      explanation: `Visiting node ${node.val}` 
+      explanation: `Visiting node ${node.val}`,
+      line: 3 // Corresponds to visit(node)
     });
 
-    steps.push({ type: 'highlight_node', nodeId: node.id, explanation: `Moving to right child of ${node.val}` });
+    steps.push({ 
+      type: 'highlight_node', 
+      nodeId: node.id, 
+      explanation: `Moving to right child of ${node.val}`,
+      line: 4 // Corresponds to traverse(node.right)
+    });
     traverse(node.right);
   };
 

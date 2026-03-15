@@ -31,7 +31,7 @@ export const LearningPathPanel: React.FC<Props> = ({ paths, viewedAlgorithms, on
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors.badge}`}>{path.level}</span>
                   <h3 className="text-sm font-bold text-white">{path.title}</h3>
                 </div>
-                <p className="text-xs text-slate-500">{path.description}</p>
+                <div className="text-xs text-slate-500">{path.description}</div>
               </div>
               <div className="text-right">
                 <div className="text-lg font-black text-white">{pct}%</div>

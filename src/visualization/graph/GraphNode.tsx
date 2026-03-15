@@ -5,20 +5,35 @@ interface GraphNodeProps {
   y: number;
   label: string;
   color: string;
+  isActive?: boolean;
 }
 
-export const GraphNode: React.FC<GraphNodeProps> = ({ x, y, label, color }) => (
-  <g className="transition-all duration-300">
+export const GraphNode: React.FC<GraphNodeProps> = ({ x, y, label, color, isActive }) => (
+  <g className="transition-all duration-700 select-none">
+    {/* Outer Glow for Active State */}
+    {isActive && (
+      <circle 
+        cx={x} cy={y} r={32} 
+        fill={color} 
+        className="opacity-20 animate-pulse" 
+      />
+    )}
+    
+    {/* Main Node */}
     <circle 
-      cx={x} cy={y} r={22} 
+      cx={x} cy={y} r={24} 
       fill={color} 
-      stroke="#1e293b" strokeWidth={2} 
-      className="transition-all duration-500 shadow-xl" 
+      stroke="#ffffff20" strokeWidth={3} 
+      className={`transition-all duration-500 shadow-premium ${isActive ? 'scale-110' : ''}`} 
     />
+    
+    {/* Label */}
     <text 
       x={x} y={y} 
       textAnchor="middle" dominantBaseline="middle" 
-      fontSize="13" fontWeight="600" fill="white"
+      fontSize="11" fontWeight="900" 
+      fill="white"
+      className="drop-shadow-md"
     >
       {label}
     </text>

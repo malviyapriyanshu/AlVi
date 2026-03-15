@@ -44,4 +44,5 @@ export interface AnimationStep {
   table?: any[];
   cells?: any[][];
   highlightCells?: { i: number; j: number }[];
+  line?: number;
 }
