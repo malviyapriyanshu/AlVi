@@ -8,54 +8,61 @@ interface ArrayBarProps {
   pointers: string[];
 }
 
+/* Maps each state to a gradient + glow */
+const stateStyles: Record<string, { gradient: string; glow: string; rounded?: string }> = {
+  default:      { gradient: 'linear-gradient(to top, #6366f1, #a5b4fc)', glow: 'none' },
+  compare:      { gradient: 'linear-gradient(to top, #f59e0b, #fde68a)', glow: '0 0 14px 3px rgba(245,158,11,0.45)' },
+  comparing:    { gradient: 'linear-gradient(to top, #f59e0b, #fde68a)', glow: '0 0 14px 3px rgba(245,158,11,0.45)' },
+  swap:         { gradient: 'linear-gradient(to top, #ef4444, #fca5a5)', glow: '0 0 16px 4px rgba(239,68,68,0.50)' },
+  found:        { gradient: 'linear-gradient(to top, #10b981, #6ee7b7)', glow: '0 0 16px 4px rgba(16,185,129,0.50)' },
+  found_result: { gradient: 'linear-gradient(to top, #10b981, #6ee7b7)', glow: '0 0 16px 4px rgba(16,185,129,0.50)' },
+  sorted:       { gradient: 'linear-gradient(to top, #10b981, #34d399)', glow: 'none' },
+  discarded:    { gradient: 'linear-gradient(to top, #334155, #475569)', glow: 'none' },
+  overwrite:    { gradient: 'linear-gradient(to top, #8b5cf6, #c4b5fd)', glow: '0 0 14px 3px rgba(139,92,246,0.50)' },
+};
+
 export const ArrayBar: React.FC<ArrayBarProps> = React.memo(({ value, maxValue, state, pointers }) => {
-  const barHeight = Math.max((value / maxValue) * 100, 5);
-
-  const colors: Record<string, string> = {
-    default: 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-500/50 hover:bg-slate-300 dark:hover:bg-slate-600',
-    compare: 'bg-amber-400 dark:bg-amber-500 border-amber-300 dark:border-amber-400/50 shadow-glow-amber z-10 scale-[1.03] text-white',
-    comparing: 'bg-amber-400 dark:bg-amber-500 border-amber-300 dark:border-amber-400/50 shadow-glow-amber z-10 scale-[1.03] text-white',
-    swap: 'bg-red-500 dark:bg-red-500 border-red-400 dark:border-red-400/50 shadow-glow-red z-20 scale-[1.06] text-white',
-    found: 'bg-emerald-500 dark:bg-emerald-500 border-emerald-400 dark:border-emerald-400/50 shadow-glow-emerald animate-pulse z-20 text-white',
-    found_result: 'bg-emerald-500 dark:bg-emerald-500 border-emerald-400 dark:border-emerald-400/50 shadow-glow-emerald animate-pulse z-20 text-white',
-    sorted: 'bg-emerald-400 dark:bg-emerald-600 border-emerald-300 dark:border-emerald-500/50 text-white',
-    discarded: 'bg-slate-100 dark:bg-slate-800 border-transparent dark:border-slate-700/30 opacity-30 grayscale scale-95',
-    overwrite: 'bg-indigo-500 dark:bg-blue-500 border-indigo-400 dark:border-blue-400/50 shadow-glow-indigo z-20 text-white',
-  };
-
-  const hasPointer = pointers.length > 0;
+  const barHeight = Math.max((value / maxValue) * 100, 4);
+  const style = stateStyles[state] ?? stateStyles.default;
+  const isActive = state !== 'default' && state !== 'discarded' && state !== 'sorted';
+  const isDiscarded = state === 'discarded';
 
   return (
-    <div className="relative flex-1 h-full flex flex-col items-center group transition-all duration-300 justify-end px-[1px]">
-
-      {/* Top Pointers */}
-      <div className="absolute top-0 -translate-y-full mb-2 flex flex-col gap-1 items-center z-30">
+    <div className="relative flex-1 h-full flex flex-col items-center justify-end">
+      {/* Top Pointers (pivot/M) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 items-center z-30">
         {pointers.filter(p => p === 'M' || p === 'pivot').map((label, i) => (
-          <PointerIndicator key={i} label={label} color="bg-blue-500" isBottom={false} />
+          <PointerIndicator key={i} label={label} color="bg-violet-500" isBottom={false} />
         ))}
       </div>
 
+      {/* Value label */}
+      <span className={`absolute text-[8px] sm:text-[9px] font-bold transition-all leading-none select-none hidden sm:block ${
+        isActive ? 'text-white drop-shadow' : 'text-slate-400 dark:text-slate-500'
+      }`} style={{ bottom: `calc(${barHeight}% + 6px)` }}>
+        {value}
+      </span>
+
       {/* Bar */}
       <div
-        className={`w-full rounded-t-md border-t transition-all duration-300 ${colors[state] || colors.default} relative overflow-hidden
-          ${hasPointer && state === 'default' ? 'ring-1 ring-blue-400/40 border-blue-400/50' : ''}`}
-        style={{ height: `${barHeight}%` }}
+        className={`w-full rounded-t-md transition-all duration-300 origin-bottom relative ${
+          isActive ? 'scale-x-[1.05] z-10' : ''
+        } ${isDiscarded ? 'opacity-25' : 'opacity-100'}`}
+        style={{
+          height: `${barHeight}%`,
+          background: style.gradient,
+          boxShadow: style.glow,
+          minHeight: '4px',
+        }}
       >
-        {/* Top shine */}
-        <div className="absolute top-0 inset-x-0 h-[1px] bg-white/30" />
-        {/* Left edge */}
-        <div className="absolute inset-y-0 left-0 w-[1px] bg-white/15" />
-
-        {/* Value Label */}
-        <span className={`absolute -top-5 md:-top-6 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] font-bold transition-colors hidden sm:inline-block ${state !== 'default' ? 'text-white' : 'text-slate-500'}`}>
-          {value}
-        </span>
+        {/* Top-shine */}
+        <div className="absolute top-0 inset-x-0 h-[2px] rounded-t-md bg-white/20" />
       </div>
 
-      {/* Bottom Pointers */}
-      <div className="absolute bottom-0 translate-y-full mt-2 flex flex-col gap-1 items-center z-30">
+      {/* Bottom Pointers (i, j, left, right…) */}
+      <div className="absolute bottom-0 translate-y-full flex flex-col gap-0.5 items-center z-30">
         {pointers.filter(p => p !== 'M' && p !== 'pivot').map((label, i) => (
-          <PointerIndicator key={i} label={label} color="bg-blue-500" isBottom={true} />
+          <PointerIndicator key={i} label={label} color="bg-indigo-500" isBottom />
         ))}
       </div>
     </div>

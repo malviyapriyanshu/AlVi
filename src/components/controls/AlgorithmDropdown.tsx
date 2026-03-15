@@ -85,72 +85,80 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, dis
         onKeyDown={handleKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`relative flex w-full items-center justify-between rounded-xl border bg-slate-800/50 px-3 py-2.5 text-sm font-semibold text-white transition-all
-          ${isOpen ? 'border-indigo-500/50 ring-2 ring-indigo-500/20' : 'border-slate-700/50 hover:border-slate-600 hover:bg-slate-800'}
+        className={`relative flex w-full items-center justify-between rounded-xl border px-3 py-2 text-sm font-bold transition-all
+          ${isOpen 
+            ? 'bg-white dark:bg-slate-900 border-indigo-500/50 ring-4 ring-indigo-500/10' 
+            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/80 shadow-sm'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div className="flex items-center gap-2.5 truncate">
-          <div className="bg-indigo-500/15 p-1.5 rounded-lg border border-indigo-500/20">
-            <Terminal size={12} className="text-indigo-400" />
+          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
+            <Terminal size={12} strokeWidth={2.5} />
           </div>
           <div className="flex flex-col items-start leading-none gap-0.5">
-            <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
-            <span className="truncate text-slate-200 text-xs">{selectedOption?.name || 'Select...'}</span>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+            <span className="truncate text-slate-900 dark:text-slate-100 text-xs tracking-tight">{selectedOption?.name || 'Select...'}</span>
           </div>
         </div>
-        <ChevronDown size={14} className={`text-slate-500 transition-transform ${isOpen ? 'rotate-180 text-indigo-400' : ''}`} />
+        <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] z-[100] w-full min-w-[300px] rounded-2xl border border-slate-700/50 bg-slate-900 backdrop-blur-xl shadow-glass animate-fade-in overflow-hidden" role="listbox">
-          {/* Search */}
-          <div className="p-3 border-b border-slate-800">
+        <div className="absolute top-[calc(100%+8px)] z-[100] w-full min-w-[320px] rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-premium animate-fade-in overflow-hidden" role="listbox">
+          {/* Search Header */}
+          <div className="p-3 bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={13} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} strokeWidth={2.5} />
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search algorithm..."
+                placeholder="Find algorithm..."
                 value={searchQuery}
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-9 pr-3 text-[11px] font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/5 transition-all"
               />
             </div>
           </div>
 
-          {/* Options */}
-          <div className="p-2 overflow-y-auto max-h-[350px] custom-scrollbar">
+          {/* List Options */}
+          <div className="p-2 overflow-y-auto max-h-[300px] custom-scrollbar">
             {filteredAlgorithms.length > 0 ? (
-              <div className="flex flex-col gap-0.5 mt-1">
-                {filteredAlgorithms.map((algo: AlgorithmEntry, index: number) => (
-                  <button
-                    key={algo.id}
-                    onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    role="option"
-                    aria-selected={selectedAlgorithmId === algo.id || activeIndex === index}
-                    className={`flex w-full items-center justify-between px-3 py-2.5 text-[12px] font-semibold rounded-xl transition-all
-                      ${(selectedAlgorithmId === algo.id || activeIndex === index)
-                        ? 'bg-indigo-500 text-white shadow-glow-indigo'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {selectedAlgorithmId === algo.id
-                        ? <Sparkles size={11} className="text-white" />
-                        : <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />}
-                      <span className="truncate">{algo.info.name}</span>
-                    </div>
-                    {selectedAlgorithmId === algo.id && (
-                      <span className="bg-white/20 px-1.5 py-0.5 rounded text-[8px] uppercase tracking-tight">Active</span>
-                    )}
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 gap-0.5">
+                {filteredAlgorithms.map((algo: AlgorithmEntry, index: number) => {
+                  const isSelected = selectedAlgorithmId === algo.id;
+                  const isActive = activeIndex === index;
+                  return (
+                    <button
+                      key={algo.id}
+                      onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`flex w-full items-center justify-between px-3 py-2.5 rounded-xl transition-all
+                        ${(isSelected || isActive)
+                          ? 'bg-indigo-600 text-white shadow-btn-indigo'
+                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-slate-300 dark:bg-slate-700'}`} />
+                        <span className="text-xs font-bold truncate tracking-tight">{algo.info.name}</span>
+                      </div>
+                      {isSelected ? (
+                         <Sparkles size={11} className="text-amber-300" />
+                      ) : (
+                         <span className="text-[8px] font-black uppercase tracking-widest opacity-40">{algo.info.complexity?.time.average}</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
-              <div className="py-10 text-center">
-                <Search size={28} className="mx-auto text-slate-700 mb-2" />
-                <p className="text-xs text-slate-600 font-medium">No results for "{searchQuery}"</p>
+              <div className="py-12 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center mx-auto mb-3">
+                  <Search size={20} className="text-slate-300" />
+                </div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No matches found</p>
               </div>
             )}
           </div>

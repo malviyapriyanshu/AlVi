@@ -1,9 +1,8 @@
-import React from 'react';
-import { BookOpen, Code2, Lightbulb, ChevronDown, ChevronUp, Presentation } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, Code2, Lightbulb, ChevronDown, ChevronUp, Presentation, Zap } from 'lucide-react';
 import { AlgorithmOverviewCard } from '../learning/AlgorithmOverviewCard';
 import { PseudocodeViewer } from '../learning/PseudocodeViewer';
 import { RealWorldAnalogy } from '../learning/RealWorldAnalogy';
-import { useThemeStore } from '../../state/useThemeStore';
 
 interface SidebarProps {
   algorithm: any;
@@ -12,76 +11,91 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ algorithm, problem, currentStep }) => {
-  const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     overview: true,
+    complexity: true,
     pseudocode: true,
-    intuition: false
+    analogy: false
   });
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   if (!algorithm) return (
-    <div className="flex flex-col items-center justify-center h-full opacity-30 p-8 text-center">
-      <BookOpen size={40} className="mb-3 text-slate-400 dark:text-slate-600" />
-      <p className="text-sm font-semibold text-slate-500">Select an Algorithm</p>
+    <div className="flex flex-col items-center justify-center h-full opacity-30 p-8 text-center animate-fade-in">
+      <BookOpen size={32} className="mb-3 text-slate-400" />
+      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Select Algorithm</p>
     </div>
   );
 
-  const SectionHeader: React.FC<{ id: string; icon: React.ReactNode; title: string }> = ({ id, icon, title }) => (
-    <button 
-      onClick={() => toggleSection(id)}
-      className="flex items-center justify-between w-full group"
-    >
-      <div className="flex items-center gap-2 px-1">
-        <span className="text-slate-400 group-hover:text-indigo-500 transition-colors uppercase">
-          {icon}
-        </span>
-        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{title}</span>
-      </div>
-      <div className="md:hidden text-slate-400">
-        {expandedSections[id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-      </div>
-    </button>
+  const CollapsibleSection: React.FC<{ 
+    id: string; 
+    icon: React.ElementType; 
+    title: string; 
+    children: React.ReactNode;
+    noPadding?: boolean;
+  }> = ({ id, icon: Icon, title, children, noPadding }) => (
+    <div className="border-b border-slate-100 dark:border-slate-800 last:border-0 shrink-0">
+      <button 
+        onClick={() => toggleSection(id)}
+        className="w-full flex items-center justify-between py-4 group transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <div className={`p-1.5 rounded-lg transition-colors ${
+            expandedSections[id] 
+              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
+              : 'bg-slate-50 dark:bg-slate-800 text-slate-400'
+          }`}>
+            <Icon size={14} />
+          </div>
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest transition-colors ${
+            expandedSections[id] ? 'text-slate-900 dark:text-white' : 'text-slate-500'
+          }`}>
+            {title}
+          </span>
+        </div>
+        <div className={`transition-transform duration-300 ${expandedSections[id] ? 'rotate-180' : 'rotate-0'} text-slate-400`}>
+          <ChevronDown size={14} />
+        </div>
+      </button>
+      
+      {expandedSections[id] && (
+        <div className={`pb-5 ${noPadding ? '' : 'animate-slide-up'}`}>
+          {children}
+        </div>
+      )}
+    </div>
   );
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Sidebar Main Header - only on desktop */}
-      <div className="hidden md:flex items-center gap-2.5 mb-2">
-        <div className="p-2 bg-indigo-100 dark:bg-indigo-500/10 rounded-xl text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
-          <BookOpen size={16} />
+    <div className="flex flex-col animate-fade-in">
+      <CollapsibleSection id="overview" icon={Lightbulb} title="Overview">
+        <div className="flex flex-col gap-4">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">
+            {algorithm.info.description}
+          </p>
+          <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+            <Zap size={14} className="text-amber-500 shrink-0" />
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">High Emphasis Model</span>
+          </div>
         </div>
-        <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Theory & Specs</h2>
-      </div>
+      </CollapsibleSection>
 
-      {/* Algorithm Card */}
-      <div className="flex flex-col gap-3">
-        <SectionHeader id="overview" icon={<Lightbulb size={13} />} title="Overview" />
-        <div className={`${expandedSections.overview ? 'block' : 'hidden md:block'} animate-slide-up`}>
-          <AlgorithmOverviewCard info={algorithm.info} leetcodeLink={problem?.link} />
-        </div>
-      </div>
+      <CollapsibleSection id="complexity" icon={Zap} title="Complexity">
+        <AlgorithmOverviewCard info={algorithm.info} leetcodeLink={problem?.link} />
+      </CollapsibleSection>
 
-      {/* Pseudocode */}
-      <div className="flex flex-col gap-3 border-t border-gray-100 dark:border-slate-800/50 pt-5 md:border-0 md:pt-0">
-        <SectionHeader id="pseudocode" icon={<Code2 size={13} />} title="Pseudocode" />
-        <div className={`${expandedSections.pseudocode ? 'block' : 'hidden md:block'} animate-slide-up`}>
-          <PseudocodeViewer
-            code={algorithm.info.pseudocode}
-            highlightLine={currentStep?.line}
-          />
-        </div>
-      </div>
+      <CollapsibleSection id="pseudocode" icon={Code2} title="Pseudocode" noPadding>
+        <PseudocodeViewer
+          code={algorithm.info.pseudocode}
+          highlightLine={currentStep?.line}
+        />
+      </CollapsibleSection>
 
-      {/* Real World Analogy */}
-      <div className="flex flex-col gap-3 border-t border-gray-100 dark:border-slate-800/50 pt-5 md:border-0 md:pt-0">
-        <SectionHeader id="intuition" icon={<Presentation size={13} />} title="Intuition" />
-        <div className={`${expandedSections.intuition ? 'block' : 'hidden md:block'} animate-slide-up`}>
-          <RealWorldAnalogy analogy={algorithm.info.analogy} />
-        </div>
-      </div>
+      <CollapsibleSection id="analogy" icon={Presentation} title="Analogy">
+        <RealWorldAnalogy analogy={algorithm.info.analogy} />
+      </CollapsibleSection>
     </div>
   );
 };

@@ -6,20 +6,18 @@ interface ArrayCanvasProps {
   maxValue: number;
 }
 
-export const ArrayCanvas: React.FC<ArrayCanvasProps> = ({ array, maxValue }) => {
-  return (
-    <div className="flex-1 w-full flex flex-col items-center justify-center px-6 py-6">
-      <div className="flex flex-1 items-end justify-center gap-[2px] md:gap-1 w-full max-w-5xl">
-        {array.map((item, idx) => (
-          <ArrayBar
-            key={idx}
-            value={item.value}
-            maxValue={maxValue}
-            state={item.state}
-            pointers={item.pointers}
-          />
-        ))}
-      </div>
+export const ArrayCanvas: React.FC<ArrayCanvasProps> = ({ array, maxValue }) => (
+  <div className="flex-1 w-full flex flex-col items-end justify-end px-6 pt-8 pb-4 overflow-hidden">
+    <div className="flex items-end justify-center gap-[3px] md:gap-[4px] w-full max-w-5xl mx-auto h-full">
+      {array.map((item, idx) => (
+        <ArrayBar
+          key={idx}
+          value={item.value}
+          maxValue={maxValue}
+          state={item.state}
+          pointers={item.pointers}
+        />
+      ))}
     </div>
-  );
-};
+  </div>
+);

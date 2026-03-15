@@ -8,7 +8,7 @@ import { usePlaybackStore } from '../state/usePlaybackStore';
 import { useAlgorithmRunner } from '../hooks/useAlgorithmRunner';
 import { useProgressTracker } from '../hooks/useProgressTracker';
 
-import { algorithmCategories, algorithmRegistry } from '../data/algorithmMetadata';
+import { algorithmRegistry } from '../data/algorithmMetadata';
 import { leetcodeProblems } from '../data/leetcodeProblems';
 import { useAlgorithmVisualization } from '../hooks/useAlgorithmVisualization';
 import { useAnimationActions, useAnimationDriver } from '../core/animation/animationEngine';
@@ -22,25 +22,21 @@ import { DPTable } from '../visualization/dp/DPTable';
 
 // Components
 import { WalkthroughPanel } from '../components/walkthrough/WalkthroughPanel';
-import { ComparisonCanvas } from '../components/comparison/ComparisonCanvas';
-import { CodeEditor } from '../components/editor/CodeEditor';
-import { InputEditor } from '../components/playground/InputEditor';
 import { QuizCard } from '../components/quiz/QuizCard';
 import { LearningPathPanel } from '../components/learning/LearningPath';
-import { ProblemPanel } from '../components/problems/ProblemPanel';
 import { NavRail } from '../components/layout/NavRail';
 
-// Utils
-import { RotateCcw, SkipBack, SkipForward, Play, Pause } from 'lucide-react';
 import React from 'react';
+import { RotateCcw, SkipBack, SkipForward, Play, Pause } from 'lucide-react';
 import { generateRandomArray } from '../utils/generateRandomArray';
 import { buildSampleBST } from '../algorithms/tree/binarySearchTree';
+import { useThemeStore } from '../state/useThemeStore';
 
 const SAMPLE_GRAPH = {
   directed: false,
   nodes: [
-    { id: 'A', label: 'A', x: 80, y: 80 }, { id: 'B', label: 'B', x: 200, y: 40 },
-    { id: 'C', label: 'C', x: 320, y: 80 }, { id: 'D', label: 'D', x: 120, y: 180 },
+    { id: 'A', label: 'A', x: 80,  y: 80  }, { id: 'B', label: 'B', x: 200, y: 40  },
+    { id: 'C', label: 'C', x: 320, y: 80  }, { id: 'D', label: 'D', x: 120, y: 180 },
     { id: 'E', label: 'E', x: 260, y: 180 }, { id: 'F', label: 'F', x: 400, y: 150 },
   ],
   edges: [
@@ -49,41 +45,35 @@ const SAMPLE_GRAPH = {
   ],
 };
 
-const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
-  <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-    <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded ${color}`} />
-    <span className="text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</span>
+/* ────── Legend Pill ────── */
+const LegendDot: React.FC<{ color: string; label: string }> = ({ color, label }) => (
+  <div className="flex items-center gap-1.5 shrink-0">
+    <div className={`w-2 h-2 rounded-full ${color}`} />
+    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{label}</span>
   </div>
 );
 
-import { useThemeStore } from '../state/useThemeStore';
-
 export default function App() {
   const { theme } = useThemeStore();
-  
+
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  const [activeTab, setActiveTab] = useState<TabId>('sorting');
+  const [activeTab, setActiveTab]   = useState<TabId>('sorting');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [array, setArray] = useState<number[]>([]);
-  const [target, setTarget] = useState<number | null>(null);
+  const [array, setArray]           = useState<number[]>([]);
+  const [target, setTarget]         = useState<number | null>(null);
 
   const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
-  const { steps, currentStepIndex, reset: resetPlayback } = usePlaybackStore();
+  const { steps, currentStepIndex, reset: resetPlayback, isPlaying } = usePlaybackStore();
   const { runSelected, stop } = useAlgorithmRunner();
 
   useAnimationDriver();
   const { nextStep, prevStep, pause, resume } = useAnimationActions();
+  const { overallProgress, recordQuizScore, markAlgorithmViewed } = useProgressTracker();
 
-  const { progress, overallProgress, recordQuizScore, markAlgorithmViewed } = useProgressTracker();
-
-  const entry = useMemo(() => algorithmRegistry[selectedAlgorithmId], [selectedAlgorithmId]);
+  const entry   = useMemo(() => algorithmRegistry[selectedAlgorithmId], [selectedAlgorithmId]);
   const problem = useMemo(() => leetcodeProblems.find(p => p.algorithmId === selectedAlgorithmId), [selectedAlgorithmId]);
 
   const { array: visualizedArray, explanation: arrayExplanation } = useAlgorithmVisualization(array, steps, currentStepIndex);
@@ -96,92 +86,58 @@ export default function App() {
   const handleNewArray = useCallback(() => {
     const newArr = generateRandomArray(20, 10, 200);
     setArray(newArr);
-    if (selectedAlgorithmId === 'binary' || selectedAlgorithmId === 'two-pointer') {
-      setTarget(newArr[Math.floor(Math.random() * newArr.length)]);
-    } else {
-      setTarget(null);
-    }
+    setTarget(
+      ['binary', 'two-pointer'].includes(selectedAlgorithmId)
+        ? newArr[Math.floor(Math.random() * newArr.length)]
+        : null
+    );
     resetPlayback();
   }, [resetPlayback, selectedAlgorithmId]);
 
-  useEffect(() => {
-    handleNewArray();
-  }, [handleNewArray]);
+  useEffect(() => { handleNewArray(); }, [handleNewArray]);
 
   useEffect(() => {
     const cat = entry?.info.category.toLowerCase();
     if (!cat) return;
-    
-    const categoryToTabMap: Record<string, TabId> = {
-      'sorting': 'sorting',
-      'searching': 'searching',
-      'techniques': 'techniques',
-      'graph': 'graph',
-      'tree': 'tree',
-      'dp': 'dp'
-    };
-
-    const targetTab = categoryToTabMap[cat];
-    if (targetTab && activeTab !== targetTab && ['sorting', 'searching', 'techniques', 'graph', 'tree', 'dp'].includes(activeTab)) {
-      setActiveTab(targetTab);
-    }
+    const map: Record<string, TabId> = { sorting:'sorting', searching:'searching', techniques:'techniques', graph:'graph', tree:'tree', dp:'dp' };
+    const t = map[cat];
+    if (t && activeTab !== t && ['sorting','searching','techniques','graph','tree','dp'].includes(activeTab)) setActiveTab(t);
   }, [selectedAlgorithmId, entry, activeTab]);
 
   const handleTabChange = (newTab: TabId) => {
     setActiveTab(newTab);
-    const algoCategories = ['sorting', 'searching', 'techniques', 'graph', 'tree', 'dp'];
-    if (algoCategories.includes(newTab)) {
+    if (['sorting','searching','techniques','graph','tree','dp'].includes(newTab))
       useAlgorithmStore.getState().setSelectedCategory(newTab);
-    }
   };
-
-  const { isPlaying: storeIsPlaying } = usePlaybackStore();
-  const isPlaying = storeIsPlaying;
 
   const handleRun = useCallback(() => {
     if (!entry) return;
     markAlgorithmViewed(selectedAlgorithmId);
-
     const cat = entry.info.category.toLowerCase();
-    if (cat === 'graph') {
-      runSelected(SAMPLE_GRAPH, 'A');
-    } else if (cat === 'dp') {
-      if (selectedAlgorithmId === 'fib') runSelected(10);
-      else runSelected([1, 2, 5], 11);
-    } else if (cat === 'tree') {
-      runSelected(buildSampleBST());
-    } else {
-      runSelected(array, target);
-    }
+    if (cat === 'graph')      runSelected(SAMPLE_GRAPH, 'A');
+    else if (cat === 'dp')    runSelected(selectedAlgorithmId === 'fib' ? 10 : [1,2,5], 11);
+    else if (cat === 'tree')  runSelected(buildSampleBST());
+    else                      runSelected(array, target);
   }, [entry, selectedAlgorithmId, markAlgorithmViewed, runSelected, array, target]);
 
-  // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      switch (e.key) {
-        case ' ':
-          e.preventDefault();
-          isPlaying ? pause() : handleRun();
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          nextStep();
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          prevStep();
-          break;
-      }
+      if (e.key === ' ')           { e.preventDefault(); isPlaying ? pause() : handleRun(); }
+      if (e.key === 'ArrowRight')  { e.preventDefault(); nextStep(); }
+      if (e.key === 'ArrowLeft')   { e.preventDefault(); prevStep(); }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, stop, handleRun, nextStep, prevStep]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isPlaying, pause, handleRun, nextStep, prevStep]);
 
-  const isVisualizationTab = ['sorting', 'searching', 'techniques', 'graph', 'tree', 'dp'].includes(activeTab);
+  const isVizTab = ['sorting','searching','techniques','graph','tree','dp'].includes(activeTab);
+  const progress = Math.round((currentStepIndex / Math.max(steps.length - 1, 1)) * 100);
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 flex flex-col font-sans overflow-x-hidden">
+    <div className="h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 flex flex-col overflow-hidden font-sans">
+
+      {/* ── Top Navbar ── */}
       <Navbar
         overallProgress={overallProgress}
         onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
@@ -196,140 +152,213 @@ export default function App() {
         isPlaying={isPlaying}
       />
 
-      {/* Main responsive layout */}
-      <div className="flex flex-1 flex-col xl:flex-row overflow-hidden relative">
-        {/* Navigation Rail — repositioned or integrated? 
-            For now keeping it as requested for desktop/tablet/mobile logic.
-            User wants a 3-column layout: Theory | Viz | Walkthrough.
-        */}
+      {/* ── Body ── */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* NavRail (icon sidebar) */}
         <NavRail activeTab={activeTab} onTabChange={handleTabChange} />
 
-        <div className="flex-1 flex flex-col xl:flex-row overflow-hidden overflow-y-auto xl:overflow-hidden bg-gray-50 dark:bg-slate-950">
-          
-          {/* Left Panel → Theory (Sidebar) */}
-          <aside className={`
-            w-full xl:w-[20%] xl:min-w-[280px] xl:max-w-[320px] 
-            border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-slate-800/50 
-            bg-white dark:bg-slate-950 xl:order-1
-            ${activeTab === 'paths' || activeTab === 'quiz' ? 'hidden' : 'block'}
-            order-3 xl:h-full overflow-y-auto custom-scrollbar
-          `}>
-             <div className="p-4 md:p-6">
-               <Sidebar
-                 algorithm={entry}
-                 problem={problem}
-                 currentStep={steps[currentStepIndex]}
-               />
-             </div>
-          </aside>
+        {/* ── 3-Column Layout ── */}
+        <div className="flex-1 flex overflow-hidden">
 
-          {/* Center → Visualization — Primary Focus */}
-          <main className="flex-[3] min-h-[480px] md:min-h-[500px] xl:min-h-0 bg-gray-50 dark:bg-slate-950 relative flex flex-col order-1 xl:order-2 xl:h-full overflow-hidden" role="main">
-            {isVisualizationTab ? (
-              <div className="flex-1 flex flex-col p-2 md:p-4 xl:p-6 min-h-0">
-                <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-slate-800/50 overflow-hidden relative shadow-sm dark:shadow-none">
-                  {/* Subtle grid */}
-                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                       style={{ backgroundImage: 'radial-gradient(rgba(148,163,184,0.4) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          {/* ── LEFT: Theory Panel ── */}
+          {isVizTab && (
+            <aside className="hidden xl:flex xl:w-[18%] xl:min-w-[220px] xl:max-w-[300px] flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-y-auto custom-scrollbar shrink-0">
+              <div className="p-6">
+                <Sidebar algorithm={entry} problem={problem} currentStep={steps[currentStepIndex]} />
+              </div>
+            </aside>
+          )}
 
-                  {/* Header */}
-                  <div className="relative z-10 flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 dark:border-slate-800/50 shrink-0">
-                    <div className="flex items-center gap-2 md:gap-3">
-                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <h2 className="text-xs md:text-sm font-bold text-slate-900 dark:text-slate-200 tracking-tight">
-                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} <span className="hidden xs:inline">Simulation</span><span className="xs:hidden">Sim</span>
-                      </h2>
+          {/* ── CENTER: Visualization Canvas ── */}
+          <main className="flex-1 flex flex-col overflow-hidden min-w-0 bg-slate-50 dark:bg-slate-950">
+
+            {isVizTab ? (
+              <div className="flex-1 flex flex-col p-3 md:p-5 gap-3 md:gap-4 min-h-0 overflow-hidden">
+
+                {/* Canvas card */}
+                <div
+                  className="flex-1 flex flex-col min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative"
+                  style={{
+                    background: theme === 'dark'
+                      ? 'radial-gradient(ellipse at top, #0f172a 0%, #020617 100%)'
+                      : 'linear-gradient(to bottom, #f1f5f9, #ffffff)',
+                    boxShadow: theme === 'dark'
+                      ? '0 0 0 1px rgba(99,102,241,0.06) inset, 0 4px 32px rgba(0,0,0,0.5)'
+                      : '0 4px 24px 0 rgba(0,0,0,0.07), 0 1px 4px 0 rgba(0,0,0,0.05)',
+                  }}
+                >
+                  {/* Subtle dot grid */}
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-40 dark:opacity-[0.04]"
+                    style={{ backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+                  />
+
+                  {/* Canvas Header */}
+                  <div className="relative z-10 flex items-center justify-between px-5 py-3 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+                        {entry?.info?.name ?? activeTab} · Simulation
+                      </span>
                     </div>
-                    <button
-                      onClick={handleNewArray}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition-all active:scale-95 border border-gray-200 dark:border-slate-700/50 shrink-0"
-                    >
-                      <RotateCcw size={14} />
-                      <span>Regenerate</span>
-                    </button>
+
+                    <div className="flex items-center gap-2">
+                      {/* Step progress bar */}
+                      {steps.length > 1 && (
+                        <div className="hidden sm:flex items-center gap-2">
+                          <div className="w-24 md:w-32 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-slate-400 w-8 text-right">{progress}%</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleNewArray}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95 shadow-sm"
+                      >
+                        <RotateCcw size={13} />
+                        <span className="hidden sm:inline">Regenerate</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Visualization Body */}
-                  <div className="flex-1 flex flex-col relative z-0 min-h-0 overflow-hidden bg-white/50 dark:bg-transparent">
-                    {(activeTab === 'sorting' || activeTab === 'searching' || activeTab === 'techniques') && 
+                  {/* Visualization body */}
+                  <div className="flex-1 flex flex-col relative z-0 min-h-0 overflow-hidden">
+                    {(activeTab === 'sorting' || activeTab === 'searching' || activeTab === 'techniques') &&
                       <ArrayCanvas array={visualizedArray} maxValue={200} />}
                     {activeTab === 'graph' && <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />}
-                    {activeTab === 'tree' && <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />}
-                    {activeTab === 'dp' && <DPTable steps={steps} currentStepIndex={currentStepIndex} />}
+                    {activeTab === 'tree'  && <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />}
+                    {activeTab === 'dp'    && <DPTable steps={steps} currentStepIndex={currentStepIndex} />}
                   </div>
 
-                  {/* Mobile Playback Controls — Below visualization as requested */}
-                  <div className="md:hidden flex items-center justify-center gap-2 p-3 bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 shrink-0">
-                    <button onClick={handleNewArray} className="flex-1 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-400 active:scale-95 transition-all">
-                      <RotateCcw size={18} />
-                    </button>
-                    <button onClick={prevStep} disabled={isPlaying} className="flex-1 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-400 active:scale-95 transition-all disabled:opacity-30">
-                      <SkipBack size={18} />
-                    </button>
-                    <button
-                      onClick={isPlaying ? pause : handleRun}
-                      className={`flex-[2] h-11 flex items-center justify-center rounded-xl font-bold text-white shadow-sm active:scale-95 transition-all ${isPlaying ? 'bg-slate-700' : 'bg-indigo-600 shadow-glow-indigo'}`}
-                    >
-                      {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                    </button>
-                    <button onClick={nextStep} disabled={isPlaying} className="flex-1 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-400 active:scale-95 transition-all disabled:opacity-30">
-                      <SkipForward size={18} />
-                    </button>
-                  </div>
-
-                  {/* Legend Footer */}
-                  <div className="relative z-10 px-4 md:px-6 py-2 md:py-3 border-t border-gray-100 dark:border-slate-800/50 shrink-0 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 md:gap-8 bg-gray-50/50 dark:bg-slate-900/30">
-                    <LegendItem color="bg-slate-400 dark:bg-slate-600" label="Default" />
-                    <LegendItem color="bg-amber-400" label="Comparing" />
-                    <LegendItem color="bg-red-500" label="Swap" />
-                    <LegendItem color="bg-emerald-500" label="Sorted" />
-                    <LegendItem color="bg-indigo-500" label="Pointer" />
+                  {/* Legend footer */}
+                  <div className="relative z-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-5 py-2.5 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/30 backdrop-blur-sm shrink-0">
+                    <LegendDot color="bg-slate-300 dark:bg-slate-600"  label="Default"   />
+                    <LegendDot color="bg-amber-400"                     label="Comparing" />
+                    <LegendDot color="bg-red-500"                       label="Swap"      />
+                    <LegendDot color="bg-emerald-500"                   label="Sorted"    />
+                    <LegendDot color="bg-indigo-500"                    label="Pointer"   />
                   </div>
                 </div>
+
+                {/* ── Mobile Playback Controls (Visualization tabs only) ── */}
+                <div className="md:hidden flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={handleNewArray}
+                    className="w-11 h-11 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 shadow-sm active:scale-95 transition-all"
+                  >
+                    <RotateCcw size={18} />
+                  </button>
+                  <button
+                    onClick={prevStep}
+                    disabled={isPlaying}
+                    className="w-11 h-11 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:bg-slate-100 shadow-sm active:scale-95 transition-all"
+                  >
+                    <SkipBack size={18} />
+                  </button>
+                  <button
+                    onClick={isPlaying ? pause : handleRun}
+                    className={`flex-1 h-11 flex items-center justify-center rounded-xl font-bold text-white transition-all active:scale-95 shadow-sm ${
+                      isPlaying
+                        ? 'bg-slate-700 dark:bg-slate-700'
+                        : 'bg-indigo-600 hover:bg-indigo-500 shadow-btn-indigo'
+                    }`}
+                  >
+                    {isPlaying
+                      ? <Pause size={20} fill="currentColor" />
+                      : <Play  size={20} fill="currentColor" className="ml-0.5" />}
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={isPlaying}
+                    className="w-11 h-11 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:bg-slate-100 shadow-sm active:scale-95 transition-all"
+                  >
+                    <SkipForward size={18} />
+                  </button>
+                </div>
+
+                {/* ── Mobile: Theory + Walkthrough stacked below viz ── */}
+                <div className="xl:hidden flex flex-col gap-3 overflow-y-auto custom-scrollbar">
+                  {/* Theory accordion */}
+                  <details className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                    <summary className="px-5 py-3.5 font-bold text-sm text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center justify-between">
+                      <span>Theory & Specs</span>
+                    </summary>
+                    <div className="px-5 pb-5 pt-1">
+                      <Sidebar algorithm={entry} problem={problem} currentStep={steps[currentStepIndex]} />
+                    </div>
+                  </details>
+
+                  {/* Step explanation accordion */}
+                  <details className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm" open>
+                    <summary className="px-5 py-3.5 font-bold text-sm text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                      Step Walkthrough
+                    </summary>
+                    <div className="px-5 pb-5 pt-1">
+                      <WalkthroughPanel
+                        steps={steps}
+                        currentStepIndex={currentStepIndex}
+                        currentExplanation={currentExplanation}
+                        problem={problem}
+                      />
+                    </div>
+                  </details>
+                </div>
+
               </div>
             ) : (
-              <div className="h-full overflow-y-auto custom-scrollbar p-4 md:p-8 bg-white dark:bg-slate-950">
+              /* Non-viz tabs (quiz, paths) */
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 bg-white dark:bg-slate-950">
                 {activeTab === 'quiz' && (
-                  <div className="max-w-3xl mx-auto w-full">
+                  <div className="max-w-3xl mx-auto">
                     <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />
                   </div>
                 )}
                 {activeTab === 'paths' && (
                   <div className="flex flex-col gap-8 max-w-5xl mx-auto">
-                    <div className="surface-card p-8 flex items-center justify-between">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-card p-8 flex items-center justify-between">
                       <div>
-                        <h2 className="text-3xl font-extrabold mb-2 text-slate-900 dark:text-white tracking-tight">{overallProgress}% Complete</h2>
+                        <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-1">{overallProgress}% Complete</h2>
                         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Your algorithm mastery path is progressing well.</p>
                       </div>
-                      <div className="w-24 h-24 rounded-full border-4 border-gray-100 dark:border-slate-800 flex items-center justify-center relative">
-                        <span className="text-xl font-bold">{overallProgress}%</span>
+                      <div className="w-24 h-24 rounded-full border-4 border-slate-100 dark:border-slate-800 flex items-center justify-center relative shrink-0">
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">{overallProgress}%</span>
                         <svg className="absolute inset-0 w-full h-full -rotate-90">
-                          <circle cx="48" cy="48" r="42" fill="transparent" stroke="#6366f1" strokeWidth="6" strokeDasharray="263.89" strokeDashoffset={263.89 * (1 - overallProgress/100)} strokeLinecap="round" />
+                          <circle cx="48" cy="48" r="42" fill="transparent" stroke="#6366f1" strokeWidth="5"
+                            strokeDasharray="263.89"
+                            strokeDashoffset={263.89 * (1 - overallProgress / 100)}
+                            strokeLinecap="round" />
                         </svg>
                       </div>
                     </div>
-                    <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id: string) => { setSelectedAlgorithmId(id); }} />
+                    <LearningPathPanel paths={learningPaths} viewedAlgorithms={[]} onSelectAlgorithm={(id: string) => setSelectedAlgorithmId(id)} />
                   </div>
                 )}
               </div>
             )}
           </main>
 
-          {/* Right Panel → Walkthrough Panel */}
-          <aside className={`
-            w-full xl:w-[20%] xl:min-w-[300px] xl:max-w-[400px] 
-            border-t xl:border-t-0 xl:border-l border-gray-200 dark:border-slate-800/50 
-            bg-white dark:bg-slate-950 p-4 md:p-6 shrink-0
-            ${!isVisualizationTab ? 'hidden' : 'block'}
-            order-2 xl:order-3 xl:h-full overflow-y-auto custom-scrollbar
-          `}>
-            <WalkthroughPanel
-              steps={steps}
-              currentStepIndex={currentStepIndex}
-              currentExplanation={currentExplanation}
-              problem={problem}
-            />
-          </aside>
+          {/* ── RIGHT: Walkthrough Panel ── */}
+          {isVizTab && (
+            <aside className="hidden xl:flex xl:w-[22%] xl:min-w-[260px] xl:max-w-[360px] flex-col border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-y-auto custom-scrollbar shrink-0">
+              <div className="p-6">
+                <WalkthroughPanel
+                  steps={steps}
+                  currentStepIndex={currentStepIndex}
+                  currentExplanation={currentExplanation}
+                  problem={problem}
+                />
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </div>
