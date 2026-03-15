@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-slate-950/98 backdrop-blur-xl border-b border-slate-800 p-4 flex flex-col gap-4 max-h-[calc(100vh-64px)] overflow-y-auto z-40 animate-fade-in">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
              <div className="flex flex-col gap-1.5">
                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Algorithm</span>
                <AlgorithmDropdown label="Algorithm" />
