@@ -29,5 +29,5 @@ export const usePlaybackStore = create<PlaybackState>((set) => ({
   setCurrentStepIndex: (index) => set({ currentStepIndex: index }),
   setTotalSteps: (total) => set({ totalSteps: total }),
   setSteps: (steps) => set({ steps }),
-  reset: () => set({ isPlaying: false, isPaused: false, currentStepIndex: 0, steps: [] }),
+  reset: () => set({ isPlaying: false, isPaused: false, currentStepIndex: 0, steps: [], totalSteps: 0 }),
 }));
