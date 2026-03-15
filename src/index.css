@@ -38,7 +38,8 @@ body {
   }
 
   .dark .btn-primary {
-    @apply bg-indigo-500 hover:bg-indigo-400 shadow-glow-indigo;
+    @apply bg-indigo-500 hover:bg-indigo-400;
+    box-shadow: theme('boxShadow.glow-indigo');
   }
 
   .btn-ghost {
