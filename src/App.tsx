@@ -5,6 +5,8 @@ import { useAnimation } from "./hooks/useAnimation";
 import { bubbleSort, bubbleSortInfo } from "./algorithms/bubbleSort";
 import { mergeSort, mergeSortInfo } from "./algorithms/mergeSort";
 import { quickSort, quickSortInfo } from "./algorithms/quickSort";
+import { binarySearch, binarySearchInfo } from "./algorithms/binarySearch";
+import { twoPointerReverse, twoPointerInfo } from "./algorithms/twoPointer";
 
 import { ArrayBar } from "./components/ArrayBar";
 import { ControlPanel } from "./components/ControlPanel";
@@ -21,6 +23,7 @@ function App() {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("bubble");
   const [speedMs, setSpeedMs] = useState(50);
   const [baseArray, setBaseArray] = useState<number[]>([]);
+  const [targetValue, setTargetValue] = useState<number | null>(null);
 
   const {
     array: visualizedArray,
@@ -43,6 +46,7 @@ function App() {
 
   const handleReset = useCallback(() => {
     initializeArray(baseArray);
+    setTargetValue(null);
   }, [initializeArray, baseArray]);
 
   const activeAlgorithmInfo = useMemo(() => {
@@ -53,6 +57,10 @@ function App() {
         return mergeSortInfo;
       case "quick":
         return quickSortInfo;
+      case "binary":
+        return binarySearchInfo;
+      case "two-pointer":
+        return twoPointerInfo;
       default:
         return bubbleSortInfo;
     }
@@ -68,6 +76,7 @@ function App() {
     if (isSorted) {
       initializeArray(baseArray);
     }
+    setTargetValue(null);
 
     let steps;
 
@@ -82,6 +91,33 @@ function App() {
 
       case "quick":
         steps = quickSort(currentArray);
+        break;
+
+      case "binary":
+        const sortedForBinary = [...currentArray].sort((a, b) => a - b);
+        initializeArray(sortedForBinary); // Instantly show sorted array
+        
+        // Pick a random target that exists in the array
+        const binaryTarget = sortedForBinary[Math.floor(Math.random() * sortedForBinary.length)];
+        setTargetValue(binaryTarget);
+        
+        steps = binarySearch(sortedForBinary, binaryTarget);
+        break;
+
+      case "two-pointer":
+        const sortedForTwoPointer = [...currentArray].sort((a, b) => a - b);
+        initializeArray(sortedForTwoPointer); // Instantly show sorted array
+        
+        // Pick two random distinct indices to form a target sum
+        const idxA = Math.floor(Math.random() * sortedForTwoPointer.length);
+        let idxB = Math.floor(Math.random() * sortedForTwoPointer.length);
+        while (idxB === idxA && sortedForTwoPointer.length > 1) {
+             idxB = Math.floor(Math.random() * sortedForTwoPointer.length);
+        }
+        const twoPointerTarget = sortedForTwoPointer[idxA] + sortedForTwoPointer[idxB];
+        setTargetValue(twoPointerTarget);
+        
+        steps = twoPointerReverse(sortedForTwoPointer, twoPointerTarget);
         break;
 
       default:
@@ -137,16 +173,27 @@ function App() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
+        
+        {targetValue !== null && (
+          <div className="flex justify-center -mb-2">
+             <div className="bg-slate-800 border border-slate-700 rounded-full px-6 py-2 shadow-lg flex items-center gap-3">
+               <span className="text-slate-400 font-medium">Target to find:</span>
+               <span className="text-2xl font-bold text-white">{targetValue}</span>
+             </div>
+          </div>
+        )}
+
         <div className="h-[520px] bg-slate-800/40 rounded-2xl border border-slate-700/50 p-4 shadow-inner flex items-end justify-center overflow-hidden">
-
-          <div className="flex items-end justify-center h-full w-full gap-[3px]">
-
+          
+          <div className="flex items-end justify-center h-full w-full gap-[3px] pt-12">
+            
             {visualizedArray.map((bar, idx) => (
               <ArrayBar
                 key={idx}
                 value={bar.value}
                 maxValue={MAX_VALUE}
                 state={bar.state}
+                pointers={bar.pointers}
                 totalBars={ARRAY_SIZE}
               />
             ))}

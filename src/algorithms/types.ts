@@ -1,9 +1,23 @@
-export type AnimationType = 'compare' | 'swap' | 'overwrite' | 'clear';
+export type AnimationType = 
+  | 'compare' 
+  | 'swap' 
+  | 'overwrite' 
+  | 'clear' 
+  | 'found'
+  | 'set_pointers'
+  | 'mark_discarded'
+  | 'mark_found';
+
+export interface Pointer {
+  index: number;
+  label: string;
+}
 
 export interface AnimationStep {
   type: AnimationType;
   indices: number[];
   value?: number;
+  pointers?: Pointer[];
 }
 
 export interface AlgorithmComplexity {

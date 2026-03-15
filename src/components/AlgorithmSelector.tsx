@@ -15,6 +15,8 @@ export const AlgorithmSelector: React.FC<AlgorithmSelectorProps> = ({
     { id: 'bubble', name: 'Bubble Sort' },
     { id: 'merge', name: 'Merge Sort' },
     { id: 'quick', name: 'Quick Sort' },
+    { id: 'binary', name: 'Binary Search' },
+    { id: 'two-pointer', name: 'Two Pointers' },
   ];
 
   return (

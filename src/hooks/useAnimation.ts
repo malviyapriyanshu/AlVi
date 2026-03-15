@@ -1,11 +1,21 @@
 import { useState, useCallback, useRef } from 'react';
 import type { AnimationStep } from '../algorithms/types';
 
-export type BarState = 'default' | 'comparing' | 'swapping' | 'sorted';
+export type BarState = 
+  | 'default' 
+  | 'comparing' 
+  | 'swapping' 
+  | 'sorted' 
+  | 'found' 
+  | 'left_boundary' 
+  | 'right_boundary' 
+  | 'mid_element' 
+  | 'discarded';
 
 export interface ArrayElement {
   value: number;
   state: BarState;
+  pointers: string[];
 }
 
 interface UseAnimationProps {
@@ -23,7 +33,7 @@ export const useAnimation = () => {
 
   const initializeArray = useCallback((newArray: number[]) => {
     clearTimeouts();
-    setArray(newArray.map(val => ({ value: val, state: 'default' })));
+    setArray(newArray.map(val => ({ value: val, state: 'default', pointers: [] })));
     setIsAnimating(false);
     setIsSorted(false);
   }, []);
@@ -36,7 +46,7 @@ export const useAnimation = () => {
   const stopAnimation = useCallback(() => {
     clearTimeouts();
     setIsAnimating(false);
-    setArray(prev => prev.map(item => ({ ...item, state: 'default' })));
+    setArray(prev => prev.map(item => ({ ...item, state: 'default', pointers: [] })));
   }, []);
 
   const runAnimation = useCallback(({ animationSteps, speedMs }: Omit<UseAnimationProps, 'initialArray'>) => {
@@ -71,12 +81,39 @@ export const useAnimation = () => {
               break;
             case 'overwrite':
               if (idx1 !== undefined && step.value !== undefined) {
-                newArray[idx1] = { value: step.value, state: 'swapping' };
+                newArray[idx1] = { value: step.value, state: 'swapping', pointers: newArray[idx1].pointers };
               }
               break;
             case 'clear':
               if (idx1 !== undefined) newArray[idx1] = { ...newArray[idx1], state: 'default' };
               if (idx2 !== undefined) newArray[idx2] = { ...newArray[idx2], state: 'default' };
+              break;
+            case 'found':
+            case 'mark_found':
+              if (idx1 !== undefined) newArray[idx1] = { ...newArray[idx1], state: 'found' };
+              break;
+            case 'set_pointers':
+              // First clear all existing pointers
+              newArray.forEach((item, i) => {
+                newArray[i] = { ...item, pointers: [] };
+              });
+              // Set new pointers
+              step.pointers?.forEach(p => {
+                if (newArray[p.index]) {
+                  newArray[p.index].pointers.push(p.label);
+                  // Assign colors based on label if they are in default or bounds state
+                  if (p.label === 'L') newArray[p.index].state = 'left_boundary';
+                  else if (p.label === 'R') newArray[p.index].state = 'right_boundary';
+                  else if (p.label === 'M') newArray[p.index].state = 'mid_element';
+                }
+              });
+              break;
+            case 'mark_discarded':
+              step.indices.forEach(idx => {
+                if (newArray[idx]) {
+                  newArray[idx] = { ...newArray[idx], state: 'discarded', pointers: [] };
+                }
+              });
               break;
           }
           return newArray;
@@ -104,7 +141,7 @@ export const useAnimation = () => {
       const timeoutId = window.setTimeout(() => {
         setArray(prevArray => {
           const newArray = [...prevArray];
-          newArray[i] = { ...newArray[i], state: 'sorted' };
+          newArray[i] = { ...newArray[i], state: 'sorted', pointers: [] };
           return newArray;
         });
       }, sortedWaitTime);
