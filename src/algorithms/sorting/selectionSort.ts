@@ -1,51 +1,41 @@
-import type { AnimationStep, AlgorithmInfo } from '../../types';
+import { AnimationStep } from '../../types/animationTypes';
+import { AlgorithmInfo } from '../../types/algorithmTypes';
 
 export const selectionSortInfo: AlgorithmInfo = {
   name: 'Selection Sort',
   category: 'sorting',
-  description: 'Divides the array into a sorted and unsorted region. It repeatedly selects the smallest element from the unsorted region and moves it to the end of the sorted region.',
+  description: 'DIVIDED into a sorted and an unsorted part. It repeatedly selects the smallest element from the unsorted part and moves it to the sorted part.',
   complexity: {
-    time: { best: 'Ω(N²)', average: 'Θ(N²)', worst: 'O(N²)' },
+    time: { best: 'O(N²)', average: 'O(N²)', worst: 'O(N²)' },
     space: 'O(1)',
   },
-  problemContext: {
-    title: 'Sort Colors',
-    link: 'https://leetcode.com/problems/sort-colors/',
-    difficulty: 'Medium',
-  },
-  intuition: 'Imagine picking the shortest person from a crowd and placing them first, then picking the next shortest, and so on. You are "selecting" the minimum each time.',
-  analogy: 'Like a teacher lining up students by height — scanning the whole line for the shortest student and placing them at the front, then repeating.',
+  intuition: 'Always pick the smallest remaining item and put it in its place.',
+  analogy: 'Like ordering cards in your hand by repeatedly picking the smallest card from the table.',
   stepByStep: [
-    { title: 'Scan', description: 'Find the minimum element in the unsorted portion.' },
-    { title: 'Swap', description: 'Swap it with the first unsorted element.' },
-    { title: 'Expand', description: 'The sorted boundary moves one step to the right.' },
+    { title: 'Find Min', description: 'Find the minimum element in the unsorted part.' },
+    { title: 'Swap', description: 'Swap it with the first element of the unsorted part.' },
   ],
-  whenToUse: 'Useful when memory writes are expensive (it makes at most O(N) swaps), but generally outperformed by insertion sort.',
-  pseudocode: `for i from 0 to n-1
-  minIdx = i
-  for j from i+1 to n-1
-    if arr[j] < arr[minIdx]
-      minIdx = j
-  swap(arr[i], arr[minIdx])`,
+  whenToUse: 'When memory is limited and simple implementation is preferred.',
+  pseudocode: `for i from 0 to n-1\n  min_idx = i\n  for j from i+1 to n-1\n    if arr[j] < arr[min_idx]\n      min_idx = j\n  swap(arr[i], arr[min_idx])`,
 };
 
 export const selectionSort = (array: number[]): AnimationStep[] => {
-  const animations: AnimationStep[] = [];
+  const steps: AnimationStep[] = [];
   const arr = [...array];
+  const n = arr.length;
 
-  for (let i = 0; i < arr.length - 1; i++) {
+  for (let i = 0; i < n; i++) {
     let minIdx = i;
-    for (let j = i + 1; j < arr.length; j++) {
-      animations.push({ type: 'compare', indices: [j, minIdx], explanation: `Comparing arr[${j}]=${arr[j]} with current min arr[${minIdx}]=${arr[minIdx]}` });
+    for (let j = i + 1; j < n; j++) {
+      steps.push({ type: 'compare', indices: [minIdx, j], explanation: `Checking if ${arr[j]} is smaller than current min ${arr[minIdx]}` });
       if (arr[j] < arr[minIdx]) {
         minIdx = j;
       }
-      animations.push({ type: 'clear', indices: [j, minIdx] });
     }
     if (minIdx !== i) {
-      animations.push({ type: 'swap', indices: [i, minIdx], explanation: `Found minimum ${arr[minIdx]} at index ${minIdx}, swapping with index ${i}` });
+      steps.push({ type: 'swap', indices: [i, minIdx], explanation: `Swapping ${arr[i]} with new min ${arr[minIdx]}` });
       [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
     }
   }
-  return animations;
+  return steps;
 };

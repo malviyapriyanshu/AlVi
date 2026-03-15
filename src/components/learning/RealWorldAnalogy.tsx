@@ -1,17 +1,18 @@
 import React from 'react';
 import { Lightbulb } from 'lucide-react';
 
-interface Props { analogy: string }
+interface Props {
+  analogy: string;
+}
 
 export const RealWorldAnalogy: React.FC<Props> = ({ analogy }) => (
-  <div className="bg-indigo-600/10 rounded-2xl p-5 border border-indigo-500/20 relative overflow-hidden group">
-    <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-      <Lightbulb size={100} className="text-indigo-400" />
+  <div className="bg-indigo-600/10 rounded-2xl p-5 border border-indigo-500/20 flex gap-4">
+    <div className="flex-shrink-0 w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+      <Lightbulb size={24} />
     </div>
-    <div className="flex items-center gap-2 mb-3">
-      <Lightbulb className="text-indigo-400" size={18} />
-      <h3 className="text-[11px] font-bold text-indigo-300 uppercase tracking-widest">Real-World Analogy</h3>
+    <div>
+      <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Real-World Analogy</h3>
+      <p className="text-sm text-slate-300 leading-relaxed italic">"{analogy}"</p>
     </div>
-    <p className="text-indigo-100/80 text-sm leading-relaxed italic z-10 relative">"{analogy}"</p>
   </div>
 );

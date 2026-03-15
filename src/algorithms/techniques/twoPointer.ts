@@ -1,57 +1,44 @@
-import type { AnimationStep, AlgorithmInfo } from '../../types';
+import { AnimationStep } from '../../types/animationTypes';
+import { AlgorithmInfo } from '../../types/algorithmTypes';
 
 export const twoPointerInfo: AlgorithmInfo = {
   name: 'Two Pointers (Pair Sum)',
-  category: 'technique',
-  description: 'Uses two indices walking through a sorted array from opposite ends to efficiently find a pair of elements that sum to a target value.',
+  category: 'techniques',
+  description: 'Efficiently find a pair of elements that sum to a target value using two indices.',
   complexity: {
     time: { best: 'Ω(1)', average: 'Θ(N)', worst: 'O(N)' },
     space: 'O(1)',
   },
-  problemContext: {
-    title: 'Two Sum II - Input Array Is Sorted',
-    link: 'https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/',
-    difficulty: 'Medium',
-  },
-  intuition: 'Two people at opposite ends of ordered numbers. If sum is too small, the left person steps forward. If too big, the right person steps backward.',
-  analogy: 'Like tuning a radio with two dials — one coarse, one fine — to hit the exact frequency.',
+  intuition: 'Walking from opposite ends. Adjust boundaries based on sum compared to target.',
+  analogy: 'Tuning two dials to hit a frequency.',
   stepByStep: [
-    { title: 'Initialize', description: 'Place one pointer at the start and another at the end.' },
-    { title: 'Calculate Sum', description: 'Add the two pointed-to elements.' },
-    { title: 'Adjust', description: 'If sum < target, increment left. If sum > target, decrement right.' },
+    { title: 'Sum', description: 'Add values at both pointers.' },
+    { title: 'Adjust', description: 'Move left in if too small, right in if too big.' },
   ],
-  whenToUse: 'Perfect for pair-finding in sorted arrays, palindrome checks, and partitioning problems.',
-  pseudocode: `left = 0, right = n-1
-while left < right
-  sum = arr[left] + arr[right]
-  if sum == target: return [left, right]
-  if sum < target: left++
-  else: right--`,
+  whenToUse: 'Pair-finding in sorted arrays.',
+  pseudocode: `left = 0, right = n-1\nwhile left < right\n  sum = arr[left] + arr[right]\n  if sum == target return [left, right]\n  if sum < target left++\n  else right--`,
 };
 
 export const twoPointer = (array: number[], target: number): AnimationStep[] => {
-  const animations: AnimationStep[] = [];
+  const steps: AnimationStep[] = [];
   let left = 0;
   let right = array.length - 1;
 
   while (left < right) {
-    animations.push({
-      type: 'set_pointers', indices: [],
+    steps.push({
+      type: 'move_pointer',
       pointers: [{ index: left, label: 'L' }, { index: right, label: 'R' }],
-      explanation: `Pointers at L=${left} (val=${array[left]}), R=${right} (val=${array[right]})`,
+      explanation: `L=${left} (${array[left]}), R=${right} (${array[right]}). Sum=${array[left] + array[right]}`
     });
     const sum = array[left] + array[right];
-    animations.push({ type: 'compare', indices: [left, right], explanation: `Sum = ${array[left]} + ${array[right]} = ${sum}, target = ${target}` });
+    steps.push({ type: 'compare', indices: [left, right], explanation: `Checking sum ${sum} against target ${target}` });
 
     if (sum === target) {
-      animations.push({ type: 'clear', indices: [left, right] });
-      animations.push({ type: 'mark_found', indices: [left, right], explanation: `Found pair! arr[${left}]=${array[left]} + arr[${right}]=${array[right]} = ${target}` });
-      return animations;
+      steps.push({ type: 'found_result', indices: [left, right], explanation: `Success! ${array[left]} + ${array[right]} = ${target}` });
+      return steps;
     }
-    animations.push({ type: 'clear', indices: [left, right] });
     if (sum < target) left++;
     else right--;
   }
-  animations.push({ type: 'set_pointers', indices: [], pointers: [] });
-  return animations;
+  return steps;
 };

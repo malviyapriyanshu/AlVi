@@ -1,36 +1,26 @@
-import type { AnimationStep, AlgorithmInfo } from '../../types';
+import { AnimationStep } from '../../types/animationTypes';
+import { AlgorithmInfo } from '../../types/algorithmTypes';
 
 export const slidingWindowInfo: AlgorithmInfo = {
   name: 'Sliding Window',
-  category: 'technique',
-  description: 'Maintains a "window" of elements that slides across the array to efficiently solve problems involving contiguous subarrays or substrings.',
+  category: 'techniques',
+  description: 'Maintains a "window" of elements that slides across the array to solve contiguous subarray problems.',
   complexity: {
     time: { best: 'Ω(N)', average: 'Θ(N)', worst: 'O(N)' },
     space: 'O(1)',
   },
-  problemContext: {
-    title: 'Longest Substring Without Repeating Characters',
-    link: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/',
-    difficulty: 'Medium',
-  },
-  intuition: 'Imagine looking through a window that slides along a wall of paintings. You can only see k paintings at a time. As the window moves, one painting leaves and a new one enters.',
-  analogy: 'A magnifying glass sliding over a line of text, examining a fixed-length portion at a time to find the best passage.',
+  intuition: 'Looking through a moving window that only shows a few elements at a time.',
+  analogy: 'A magnifying glass sliding over a line of text.',
   stepByStep: [
-    { title: 'Initialize Window', description: 'Start with a window covering the first k elements.' },
-    { title: 'Slide', description: 'Move the window one step right: remove the leftmost, add the next rightmost.' },
-    { title: 'Track Best', description: 'Keep track of the maximum/minimum sum seen so far.' },
+    { title: 'Init', description: 'Create initial window of size k.' },
+    { title: 'Slide', description: 'Move window right: remove leftmost, add next rightmost.' },
   ],
-  whenToUse: 'Ideal for problems asking about contiguous subarrays of fixed or variable length (max sum, longest substring, etc.).',
-  pseudocode: `windowSum = sum(arr[0..k-1])
-maxSum = windowSum
-for i from k to n-1
-  windowSum += arr[i] - arr[i-k]
-  maxSum = max(maxSum, windowSum)
-return maxSum`,
+  whenToUse: 'Contiguous subarray problems.',
+  pseudocode: `for i from k to n-1:\n  sum += arr[i] - arr[i-k]\n  maxSum = max(maxSum, sum)`,
 };
 
 export const slidingWindow = (array: number[], windowSize: number = 3): AnimationStep[] => {
-  const animations: AnimationStep[] = [];
+  const steps: AnimationStep[] = [];
   const k = Math.min(windowSize, array.length);
   let windowSum = 0;
   let maxSum = -Infinity;
@@ -38,30 +28,28 @@ export const slidingWindow = (array: number[], windowSize: number = 3): Animatio
 
   for (let i = 0; i < k; i++) {
     windowSum += array[i];
-    const hlIndices = []; for (let j = 0; j <= i; j++) hlIndices.push(j);
-    animations.push({ type: 'highlight_range', indices: hlIndices, explanation: `Building initial window: adding arr[${i}]=${array[i]}, window sum = ${windowSum}` });
+    steps.push({ 
+      type: 'highlight_range', 
+      indices: Array.from({ length: i + 1 }, (_, j) => j),
+      explanation: `Building initial window: added ${array[i]}, sum=${windowSum}` 
+    });
   }
   maxSum = windowSum;
 
-  animations.push({
-    type: 'set_pointers', indices: [],
-    pointers: [{ index: 0, label: 'L' }, { index: k - 1, label: 'R' }],
-    explanation: `Initial window [0..${k - 1}], sum = ${windowSum}`,
-  });
-
   for (let i = k; i < array.length; i++) {
-    animations.push({ type: 'compare', indices: [i - k], explanation: `Removing arr[${i - k}]=${array[i - k]} from window` });
-    animations.push({ type: 'mark_discarded', indices: [i - k] });
+    steps.push({ 
+      type: 'discard_range', 
+      indices: [i - k], 
+      explanation: `Removing ${array[i - k]} from window` 
+    });
 
     windowSum = windowSum - array[i - k] + array[i];
-
-    const hlIndices = []; for (let j = i - k + 1; j <= i; j++) hlIndices.push(j);
-    animations.push({
-      type: 'set_pointers', indices: [],
+    
+    steps.push({
+      type: 'move_pointer',
       pointers: [{ index: i - k + 1, label: 'L' }, { index: i, label: 'R' }],
-      explanation: `Window [${i - k + 1}..${i}], sum = ${windowSum}`,
+      explanation: `Window [${i - k + 1}..${i}], sum=${windowSum}`
     });
-    animations.push({ type: 'highlight_range', indices: hlIndices, explanation: `Adding arr[${i}]=${array[i]}, new window sum = ${windowSum}` });
 
     if (windowSum > maxSum) {
       maxSum = windowSum;
@@ -69,14 +57,11 @@ export const slidingWindow = (array: number[], windowSize: number = 3): Animatio
     }
   }
 
-  const foundIndices = []; for (let j = maxStart; j < maxStart + k; j++) foundIndices.push(j);
-  animations.push({ type: 'set_pointers', indices: [], pointers: [] });
-  for (let idx = 0; idx < array.length; idx++) {
-    if (!foundIndices.includes(idx)) {
-      animations.push({ type: 'clear', indices: [idx] });
-    }
-  }
-  animations.push({ type: 'mark_found', indices: foundIndices, explanation: `Maximum sum window [${maxStart}..${maxStart + k - 1}] with sum = ${maxSum}` });
+  steps.push({ 
+    type: 'found_result', 
+    indices: Array.from({ length: k }, (_, j) => maxStart + j),
+    explanation: `Max sum window found with sum ${maxSum}`
+  });
 
-  return animations;
+  return steps;
 };

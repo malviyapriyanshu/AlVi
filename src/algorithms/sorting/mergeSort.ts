@@ -1,73 +1,63 @@
-import type { AnimationStep, AlgorithmInfo } from '../../types';
+import { AnimationStep } from '../../types/animationTypes';
+import { AlgorithmInfo } from '../../types/algorithmTypes';
 
 export const mergeSortInfo: AlgorithmInfo = {
   name: 'Merge Sort',
   category: 'sorting',
-  description: 'A Divide and Conquer algorithm that divides the input array into two halves, recursively sorts them, and then merges the two sorted halves.',
+  description: 'Divide-and-conquer algorithm that divides the input array into two halves, recursively calls itself for the two halves, and then merges the two sorted halves.',
   complexity: {
-    time: { best: 'Ω(N log N)', average: 'Θ(N log N)', worst: 'O(N log N)' },
+    time: { best: 'O(N log N)', average: 'O(N log N)', worst: 'O(N log N)' },
     space: 'O(N)',
   },
-  problemContext: {
-    title: 'Sort List',
-    link: 'https://leetcode.com/problems/sort-list/',
-    difficulty: 'Medium',
-  },
-  intuition: 'Think of a large pile of unsorted papers. Split the pile into smaller groups until each has one paper. Then merge them back in order.',
-  analogy: 'Two lines of students already sorted by height. To merge them, compare the front of each line and pick the shorter student.',
+  intuition: 'Keep splitting until you reach single elements, then merge them back in sorted order.',
+  analogy: 'Organizing a large document by splitting it among team members and then combining their sorted parts.',
   stepByStep: [
-    { title: 'Divide', description: 'Split the array into two halves recursively.' },
-    { title: 'Conquer', description: 'Sort the sub-arrays (base case: single element).' },
-    { title: 'Merge', description: 'Combine sorted sub-arrays back into one sorted array.' },
+    { title: 'Divide', description: 'Split the array in the middle.' },
+    { title: 'Conquer', description: 'Recursively sort the two halves.' },
+    { title: 'Merge', description: 'Combine the sorted halves back together.' },
   ],
-  whenToUse: 'Highly efficient for large datasets and linked lists where stable sorting is required.',
-  pseudocode: `mergeSort(arr)
-  if arr.length <= 1 return arr
-  mid = arr.length / 2
-  left = mergeSort(arr[0..mid])
-  right = mergeSort(arr[mid..n])
-  return merge(left, right)`,
+  whenToUse: 'Stable sort is needed, or for large datasets.',
+  pseudocode: `mergeSort(arr):\n  if n <= 1 return\n  mid = n / 2\n  L = mergeSort(arr[0..mid])\n  R = mergeSort(arr[mid..n])\n  merge(L, R)`,
 };
 
 export const mergeSort = (array: number[]): AnimationStep[] => {
-  const animations: AnimationStep[] = [];
-  if (array.length <= 1) return animations;
-  const auxArray = [...array];
-  mergeSortHelper(array, 0, array.length - 1, auxArray, animations);
-  return animations;
-};
+  const steps: AnimationStep[] = [];
+  const arr = [...array];
 
-function mergeSortHelper(mainArray: number[], startIdx: number, endIdx: number, auxArray: number[], animations: AnimationStep[]) {
-  if (startIdx === endIdx) return;
-  const middleIdx = Math.floor((startIdx + endIdx) / 2);
-  mergeSortHelper(auxArray, startIdx, middleIdx, mainArray, animations);
-  mergeSortHelper(auxArray, middleIdx + 1, endIdx, mainArray, animations);
-  doMerge(mainArray, startIdx, middleIdx, endIdx, auxArray, animations);
-}
+  function merge(start: number, mid: number, end: number) {
+    const leftArr = arr.slice(start, mid + 1);
+    const rightArr = arr.slice(mid + 1, end + 1);
+    let i = 0, j = 0, k = start;
 
-function doMerge(mainArray: number[], startIdx: number, middleIdx: number, endIdx: number, auxArray: number[], animations: AnimationStep[]) {
-  let k = startIdx, i = startIdx, j = middleIdx + 1;
-  while (i <= middleIdx && j <= endIdx) {
-    animations.push({ type: 'compare', indices: [i, j], explanation: `Comparing left[${i}]=${auxArray[i]} with right[${j}]=${auxArray[j]}` });
-    animations.push({ type: 'clear', indices: [i, j] });
-    if (auxArray[i] <= auxArray[j]) {
-      animations.push({ type: 'overwrite', indices: [k], value: auxArray[i], explanation: `Placing ${auxArray[i]} at position ${k}` });
-      mainArray[k++] = auxArray[i++];
-    } else {
-      animations.push({ type: 'overwrite', indices: [k], value: auxArray[j], explanation: `Placing ${auxArray[j]} at position ${k}` });
-      mainArray[k++] = auxArray[j++];
+    while (i < leftArr.length && j < rightArr.length) {
+      steps.push({ type: 'compare', indices: [start + i, mid + 1 + j], explanation: `Comparing sub-array elements` });
+      if (leftArr[i] <= rightArr[j]) {
+        steps.push({ type: 'overwrite', indices: [k], value: leftArr[i], explanation: `Placing ${leftArr[i]} from left half` });
+        arr[k++] = leftArr[i++];
+      } else {
+        steps.push({ type: 'overwrite', indices: [k], value: rightArr[j], explanation: `Placing ${rightArr[j]} from right half` });
+        arr[k++] = rightArr[j++];
+      }
+    }
+    while (i < leftArr.length) {
+      steps.push({ type: 'overwrite', indices: [k], value: leftArr[i], explanation: `Placing remaining from left half` });
+      arr[k++] = leftArr[i++];
+    }
+    while (j < rightArr.length) {
+      steps.push({ type: 'overwrite', indices: [k], value: rightArr[j], explanation: `Placing remaining from right half` });
+      arr[k++] = rightArr[j++];
     }
   }
-  while (i <= middleIdx) {
-    animations.push({ type: 'compare', indices: [i, i] });
-    animations.push({ type: 'clear', indices: [i, i] });
-    animations.push({ type: 'overwrite', indices: [k], value: auxArray[i] });
-    mainArray[k++] = auxArray[i++];
+
+  function sort(start: number, end: number) {
+    if (start < end) {
+      const mid = Math.floor((start + end) / 2);
+      sort(start, mid);
+      sort(mid + 1, end);
+      merge(start, mid, end);
+    }
   }
-  while (j <= endIdx) {
-    animations.push({ type: 'compare', indices: [j, j] });
-    animations.push({ type: 'clear', indices: [j, j] });
-    animations.push({ type: 'overwrite', indices: [k], value: auxArray[j] });
-    mainArray[k++] = auxArray[j++];
-  }
-}
+
+  sort(0, arr.length - 1);
+  return steps;
+};

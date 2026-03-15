@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useAlgorithmStore } from '../../state/useAlgorithmStore';
 
 interface Option {
   id: string;
@@ -11,52 +12,59 @@ interface Category {
   options: Option[];
 }
 
-interface DropdownWrapperProps {
-  selectedId: string;
-  categories: Category[];
-  onSelect: (id: string) => void;
-  disabled?: boolean;
+interface AlgorithmDropdownProps {
   label: string;
+  categories: Category[];
+  disabled?: boolean;
 }
 
-export const DropdownWrapper: React.FC<DropdownWrapperProps> = ({
-  selectedId, categories, onSelect, disabled = false, label
-}) => {
+export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, categories, disabled }) => {
+  const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const selectedOption = categories.flatMap(c => c.options).find(o => o.id === selectedId);
+
+  const selectedOption = categories.flatMap(c => c.options).find(o => o.id === selectedAlgorithmId);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setIsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (id: string) => { if (disabled) return; onSelect(id); setIsOpen(false); };
-
   return (
-    <div className="flex flex-col gap-2 relative" ref={dropdownRef}>
-      <label className="text-sm font-medium text-slate-400">{label}</label>
-      <button type="button" disabled={disabled} onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full sm:w-64 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm font-medium transition-all duration-200 outline-none
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-indigo-500 cursor-pointer'}
-          ${isOpen ? 'ring-2 ring-indigo-500/20 border-indigo-500' : 'shadow-sm'}`}>
-        <span className={selectedOption ? 'text-white' : 'text-slate-500'}>{selectedOption ? selectedOption.name : 'Select Algorithm'}</span>
-        <ChevronDown size={18} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-indigo-400' : ''}`} />
+    <div className="relative w-full lg:w-64" ref={dropdownRef}>
+      <label className="absolute -top-2 left-3 bg-slate-900 px-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest z-10 transition-colors group-focus-within:text-indigo-400">
+        {label}
+      </label>
+      <button
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`group flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed`}
+      >
+        <span className="truncate">{selectedOption?.name || 'Select...'}</span>
+        <ChevronDown size={16} className={`text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      {isOpen && !disabled && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 z-50 overflow-hidden">
-          {categories.map((category, idx) => (
-            <div key={category.title}>
-              {idx > 0 && <div className="h-px bg-slate-700 mx-3 my-1" />}
-              <div className="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{category.title}</div>
-              {category.options.map(option => (
-                <button key={option.id} onClick={() => handleSelect(option.id)}
-                  className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors
-                    ${selectedId === option.id ? 'bg-indigo-600/10 text-indigo-400 font-semibold' : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full mr-3 transition-colors ${selectedId === option.id ? 'bg-indigo-500' : 'bg-transparent'}`} />
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+8px)] z-50 w-full max-h-[400px] overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 p-2 shadow-2xl animate-in fade-in slide-in-from-top-2">
+          {categories.map((category) => (
+            <div key={category.title} className="mb-2 last:mb-0">
+              <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                {category.title}
+              </div>
+              {category.options.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => { setSelectedAlgorithmId(option.id); setIsOpen(false); }}
+                  className={`flex w-full items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                    ${selectedAlgorithmId === option.id 
+                      ? 'bg-indigo-600 text-white' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                >
                   {option.name}
                 </button>
               ))}

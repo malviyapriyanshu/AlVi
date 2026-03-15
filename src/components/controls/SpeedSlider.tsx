@@ -1,34 +1,28 @@
 import React from 'react';
+import { usePlaybackStore } from '../../state/usePlaybackStore';
 
-interface SpeedSliderProps {
-  speed: number;
-  onSpeedChange: (speed: number) => void;
-  disabled?: boolean;
-}
+export const SpeedSlider: React.FC = () => {
+  const { speed, setSpeed, isPlaying } = usePlaybackStore();
 
-export const SpeedSlider: React.FC<SpeedSliderProps> = ({ speed, onSpeedChange, disabled }) => {
-  const maxSpeedMs = 1000;
-  const minSpeedMs = 5;
-
-  const getSliderValue = () => Math.max(1, Math.min(100, 100 - ((speed - minSpeedMs) / (maxSpeedMs - minSpeedMs)) * 100));
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sliderVal = parseInt(e.target.value, 10);
-    const newSpeedMs = maxSpeedMs - ((sliderVal / 100) * (maxSpeedMs - minSpeedMs));
-    onSpeedChange(Math.max(minSpeedMs, newSpeedMs));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpeed(parseInt(e.target.value, 10));
   };
 
   return (
-    <div className="flex flex-col gap-2 min-w-[150px]">
-      <div className="flex justify-between items-center text-sm">
-        <label className="font-medium text-slate-400">Speed</label>
-        <span className="text-indigo-400 font-mono text-xs">{Math.round(speed)}ms</span>
+    <div className="flex flex-col gap-1 w-full lg:w-48">
+      <div className="flex items-center justify-between px-1">
+        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Speed</label>
+        <span className="text-[10px] font-mono text-indigo-400">{speed}ms</span>
       </div>
-      <input type="range" min="1" max="100" value={getSliderValue()} onChange={handleSliderChange} disabled={disabled}
-        className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-700' : 'bg-slate-700'} accent-indigo-500`} />
-      <div className="flex justify-between text-xs text-slate-500">
-        <span>Slow</span><span>Fast</span>
-      </div>
+      <input
+        type="range"
+        min="10"
+        max="1000"
+        step="10"
+        value={speed}
+        onChange={handleChange}
+        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-indigo-500 transition-all hover:bg-slate-600"
+      />
     </div>
   );
 };

@@ -1,79 +1,62 @@
-import type { GraphAnimationStep, Graph } from '../../types/extended';
+import { AnimationStep } from '../../types/animationTypes';
+import { Graph } from '../../types/extended';
+import { AlgorithmInfo } from '../../types/algorithmTypes';
 
-export const dijkstraInfo = {
+export const dijkstraInfo: AlgorithmInfo = {
   name: "Dijkstra's Algorithm",
-  category: 'graph' as const,
-  description: 'Finds the shortest path from a source node to all other nodes in a weighted graph with non-negative edge weights.',
-  complexity: { time: { best: 'O((V+E) log V)', average: 'O((V+E) log V)', worst: 'O(V²)' }, space: 'O(V)' },
-  problemContext: { title: 'Network Delay Time', link: 'https://leetcode.com/problems/network-delay-time/', difficulty: 'Medium' as const },
-  intuition: "Always explore the currently closest unvisited node. Like a greedy approach that expands the 'known shortest path' frontier.",
-  analogy: 'GPS navigation: always take the shortest known road, update estimates as you find better routes.',
+  category: 'graph',
+  description: 'Finds the shortest paths between nodes in a graph with non-negative edge weights.',
+  complexity: { time: { best: 'O(E log V)', average: 'O(E log V)', worst: 'O(E log V)' }, space: 'O(V)' },
+  intuition: 'Greedily choosing the closest unvisited node and updating its neighbors.',
+  analogy: 'Finding the fastest route between cities on a map.',
   stepByStep: [
-    { title: 'Initialize', description: 'Set distance to start = 0, all others = ∞.' },
-    { title: 'Pick Minimum', description: 'Select the unvisited node with smallest known distance.' },
-    { title: 'Relax Edges', description: 'Update neighbors if a shorter path is found.' },
-    { title: 'Repeat', description: 'Until all nodes are visited.' },
+    { title: 'Initialize', description: 'Set distances to all nodes as ∞, start node as 0.' },
+    { title: 'Relax', description: 'Pick node with smallest distance, update neighbors if shorter path exists.' }
   ],
-  whenToUse: 'Shortest path in weighted graphs with non-negative weights (GPS, network routing).',
-  pseudocode: `dist = {start: 0, all others: ∞}
-while unvisited nodes exist:
-  u = node with min dist
-  for each neighbor v of u:
-    if dist[u] + weight(u,v) < dist[v]:
-      dist[v] = dist[u] + weight(u,v)`,
+  whenToUse: 'Shortest path in weighted graphs.',
+  pseudocode: `dist[start] = 0\nwhile nodes:\n  u = min_dist(nodes)\n  for v in neighbors(u):\n    dist[v] = min(dist[v], dist[u] + w(u,v))`
 };
 
-export function dijkstra(graph: Graph, startId: string): GraphAnimationStep[] {
-  const steps: GraphAnimationStep[] = [];
+export const dijkstra = (graph: Graph, startId: string): AnimationStep[] => {
+  const steps: AnimationStep[] = [];
   const distances: Record<string, number> = {};
   const visited = new Set<string>();
-  const parentMap: Record<string, string | null> = {};
-  const unvisited = new Set<string>();
+  const parent: Record<string, string | null> = {};
 
-  graph.nodes.forEach(n => {
-    distances[n.id] = n.id === startId ? 0 : Infinity;
-    parentMap[n.id] = null;
-    unvisited.add(n.id);
-  });
+  graph.nodes.forEach(n => distances[n.id] = Infinity);
+  distances[startId] = 0;
 
-  steps.push({ type: 'visit', nodeId: startId, visitedNodes: [], queueOrStack: [...unvisited], distances: { ...distances }, parentMap: { ...parentMap }, explanation: `Initialize: dist[${startId}]=0, all others=∞` });
+  steps.push({ type: 'visit', nodeId: startId, explanation: `Initialize distances. Start at ${startId}` });
 
-  while (unvisited.size > 0) {
-    const current = [...unvisited].reduce((a, b) => distances[a] <= distances[b] ? a : b);
-    if (distances[current] === Infinity) break;
+  while (visited.size < graph.nodes.length) {
+    let u: string | null = null;
+    let minDist = Infinity;
 
-    unvisited.delete(current);
-    visited.add(current);
-    steps.push({ type: 'dequeue', nodeId: current, visitedNodes: [...visited], queueOrStack: [...unvisited], distances: { ...distances }, parentMap: { ...parentMap }, explanation: `Visit node ${current} (shortest dist = ${distances[current]})` });
+    graph.nodes.forEach(n => {
+      if (!visited.has(n.id) && distances[n.id] < minDist) {
+        minDist = distances[n.id];
+        u = n.id;
+      }
+    });
 
-    for (const edge of graph.edges) {
-      let neighbor: string | null = null;
-      let weight = edge.weight ?? 1;
-      if (edge.from === current) neighbor = edge.to;
-      else if (!graph.directed && edge.to === current) { neighbor = edge.from; }
-      if (!neighbor || !unvisited.has(neighbor)) continue;
+    if (u === null) break;
+    visited.add(u);
+    steps.push({ type: 'dequeue', nodeId: u, visitedNodes: [...visited], distances: { ...distances }, explanation: `Picking node ${u} with shortest distance ${minDist}` });
 
-      const newDist = distances[current] + weight;
-      steps.push({ type: 'explore_edge', nodeId: neighbor, edgeFrom: current, edgeTo: neighbor, visitedNodes: [...visited], queueOrStack: [...unvisited], distances: { ...distances }, parentMap: { ...parentMap }, explanation: `Check edge ${current}→${neighbor} (weight ${weight}). New dist = ${newDist}` });
+    const neighbors = graph.edges.filter(e => e.from === u || (!graph.directed && e.to === u));
 
-      if (newDist < distances[neighbor]) {
-        distances[neighbor] = newDist;
-        parentMap[neighbor] = current;
-        steps.push({ type: 'update_distance', nodeId: neighbor, visitedNodes: [...visited], queueOrStack: [...unvisited], distances: { ...distances }, parentMap: { ...parentMap }, explanation: `Relax: dist[${neighbor}] updated to ${newDist}` });
+    for (const edge of neighbors) {
+      const v = edge.from === u ? edge.to : edge.from;
+      if (!visited.has(v)) {
+        const weight = edge.weight ?? 1;
+        const newDist = distances[u!] + weight;
+        if (newDist < distances[v]) {
+          distances[v] = newDist;
+          parent[v] = u;
+          steps.push({ type: 'enqueue', nodeId: v, edgeFrom: u!, edgeTo: v, distances: { ...distances }, explanation: `Update distance to ${v}: ${newDist}` });
+        }
       }
     }
   }
-
-  // Reconstruct shortest paths
-  const shortestPath: string[] = [];
-  let node = graph.nodes.find(n => n.id !== startId)?.id;
-  if (node) {
-    while (node && parentMap[node] !== undefined) {
-      shortestPath.unshift(node);
-      node = parentMap[node] ?? undefined;
-    }
-    shortestPath.unshift(startId);
-    steps.push({ type: 'shortest_path', visitedNodes: [...visited], queueOrStack: [], distances: { ...distances }, parentMap: { ...parentMap }, shortestPath, explanation: `Shortest paths found from ${startId}!` });
-  }
   return steps;
-}
+};

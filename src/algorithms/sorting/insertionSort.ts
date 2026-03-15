@@ -1,53 +1,41 @@
-import type { AnimationStep, AlgorithmInfo } from '../../types';
+import { AnimationStep } from '../../types/animationTypes';
+import { AlgorithmInfo } from '../../types/algorithmTypes';
 
 export const insertionSortInfo: AlgorithmInfo = {
   name: 'Insertion Sort',
   category: 'sorting',
-  description: 'Builds the final sorted array one item at a time. It picks each element and inserts it into its correct position among the previously sorted elements.',
+  description: 'Builds the final sorted array one item at a time, by repeatedly taking the next item and inserting it into its correct position among the already-sorted items.',
   complexity: {
-    time: { best: 'Ω(N)', average: 'Θ(N²)', worst: 'O(N²)' },
+    time: { best: 'O(N)', average: 'O(N²)', worst: 'O(N²)' },
     space: 'O(1)',
   },
-  problemContext: {
-    title: 'Insertion Sort List',
-    link: 'https://leetcode.com/problems/insertion-sort-list/',
-    difficulty: 'Medium',
-  },
-  intuition: 'Think of how you sort playing cards in your hand. You pick up a new card and slide it into the correct position among the cards you have already sorted.',
-  analogy: 'Sorting a hand of playing cards — you pick up each card and insert it into its proper place among the cards you already hold.',
+  intuition: 'Take one card from the deck and insert it into the correct position in your sorted hand.',
+  analogy: 'Sorting a hand of playing cards.',
   stepByStep: [
-    { title: 'Pick', description: 'Start from the second element and consider it as the "key".' },
-    { title: 'Compare', description: 'Compare the key with elements to its left.' },
-    { title: 'Shift', description: 'Move larger elements one position to the right to make space.' },
-    { title: 'Insert', description: 'Place the key in its correct sorted position.' },
+    { title: 'Pick', description: 'Pick the next element from the unsorted part.' },
+    { title: 'Insert', description: 'Shift elements to the right until the correct position is found.' },
   ],
-  whenToUse: 'Excellent for small or nearly-sorted datasets. Often used as the base case in hybrid sorting algorithms like Timsort.',
-  pseudocode: `for i from 1 to n-1
-  key = arr[i]
-  j = i - 1
-  while j >= 0 and arr[j] > key
-    arr[j+1] = arr[j]
-    j = j - 1
-  arr[j+1] = key`,
+  whenToUse: 'Small datasets or nearly sorted arrays.',
+  pseudocode: `for i from 1 to n-1\n  key = arr[i]\n  j = i - 1\n  while j >= 0 and arr[j] > key\n    arr[j+1] = arr[j]\n    j--\n  arr[j+1] = key`,
 };
 
 export const insertionSort = (array: number[]): AnimationStep[] => {
-  const animations: AnimationStep[] = [];
+  const steps: AnimationStep[] = [];
   const arr = [...array];
+  const n = arr.length;
 
-  for (let i = 1; i < arr.length; i++) {
+  for (let i = 1; i < n; i++) {
     const key = arr[i];
     let j = i - 1;
-    animations.push({ type: 'compare', indices: [i], explanation: `Picking element arr[${i}]=${key} as the key` });
+    steps.push({ type: 'compare', indices: [i, j], explanation: `Inserting ${key} into sorted portion` });
+    
     while (j >= 0 && arr[j] > key) {
-      animations.push({ type: 'compare', indices: [j, j + 1], explanation: `arr[${j}]=${arr[j]} > key=${key}, shifting right` });
-      animations.push({ type: 'overwrite', indices: [j + 1], value: arr[j], explanation: `Moving ${arr[j]} to index ${j + 1}` });
+      steps.push({ type: 'overwrite', indices: [j + 1], value: arr[j], explanation: `Shifting ${arr[j]} right` });
       arr[j + 1] = arr[j];
       j--;
     }
     arr[j + 1] = key;
-    animations.push({ type: 'overwrite', indices: [j + 1], value: key, explanation: `Inserting key=${key} at index ${j + 1}` });
-    animations.push({ type: 'clear', indices: [i] });
+    steps.push({ type: 'overwrite', indices: [j + 1], value: key, explanation: `Placed ${key} in correct position` });
   }
-  return animations;
+  return steps;
 };

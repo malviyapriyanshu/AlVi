@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+# AlgoVis - Interactive Algorithm Learning Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AlgoVis is a production-grade interactive algorithm visualization platform designed to help students master Data Structures and Algorithms through immersive step-by-step animations and real-world analogies.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Advanced Visualization**: High-fidelity animations for Sorting, Searching, Graphs, Trees, and Dynamic Programming.
+- **Interactive Coding**: Solve problems directly in the integrated Monaco Editor and watch your solution animate in real-time.
+- **Educational Layer**: Every algorithm comes with complexity analysis, real-world analogies, and logic breakdowns.
+- **Progress Tracking**: Tracks your learning path and quiz scores across different algorithm families.
+- **Algorithm Comparison**: Race multiple algorithms side-by-side to understand performance differences.
 
-## React Compiler
+## 🛠 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: TailwindCSS, Lucide-React
+- **State Management**: Zustand
+- **Editor**: Monaco Editor
+- **Testing**: Vitest, React Testing Library
 
-## Expanding the ESLint configuration
+## 📂 Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `src/app`: Application core, routes, and layout providers.
+- `src/core`: Animation engine and processing logic.
+- `src/visualization`: Modular rendering components for different data structures.
+- `src/algorithms`: Pure algorithm implementations returning standardized animation steps.
+- `src/state`: Zustand stores for global application state.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚦 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start development server:
+   ```bash
+   npm run dev
+   ```
+3. Run tests:
+   ```bash
+   npm test
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📜 License
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+MIT
