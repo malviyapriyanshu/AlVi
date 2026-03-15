@@ -38,6 +38,7 @@ import { LearningPathPanel } from '../components/learning/LearningPath';
 import { ProblemPanel } from '../components/problems/ProblemPanel';
 
 // Utils
+import { RotateCcw } from 'lucide-react';
 import { generateRandomArray } from '../utils/generateRandomArray';
 import { buildSampleBST } from '../algorithms/tree/binarySearchTree';
 
@@ -168,24 +169,35 @@ export default function App() {
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {isVisualizationTab && (
             <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex flex-col lg:flex-row gap-6 items-start">
-                <AlgorithmDropdown 
-                  label="Algorithm" 
-                  categories={algorithmCategories} 
-                />
-                <SpeedSlider />
-                <button onClick={handleNewArray} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-sm font-bold transition-all whitespace-nowrap">
-                   New Data
-                </button>
+              <div className="flex flex-col xl:flex-row gap-8 items-stretch xl:items-end justify-between">
+                <div className="flex flex-col sm:flex-row gap-8 flex-1">
+                  <AlgorithmDropdown 
+                    label="Active Algorithm" 
+                    categories={algorithmCategories} 
+                  />
+                  <SpeedSlider />
+                </div>
+                <div className="flex items-center gap-3 self-end xl:self-auto">
+                    <button onClick={handleNewArray} className="group flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl border border-slate-700 text-sm font-black transition-all shadow-xl active:scale-95 whitespace-nowrap">
+                       <RotateCcw size={16} className="text-indigo-400 group-rotate-[-45deg] transition-transform" />
+                       <span>Regenerate Data</span>
+                    </button>
+                </div>
               </div>
 
               {/* Canvas Area */}
-              <div className="bg-slate-900 shadow-2xl rounded-3xl p-6 border border-slate-700/50 min-h-[440px] flex flex-col relative overflow-hidden">
-                <div className="absolute top-4 right-6 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50 z-10 transition-all">
-                   {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Visualizer
+              <div className="bg-slate-900 shadow-[0_30px_100px_rgba(0,0,0,0.5)] rounded-[2.5rem] p-4 lg:p-10 border border-slate-700/40 min-h-[500px] flex flex-col relative overflow-hidden group">
+                {/* Visualizer Blueprint Background */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                     style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+                <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+                     style={{ backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)', backgroundSize: '150px 150px' }} />
+                
+                <div className="absolute top-6 right-8 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500/40 bg-indigo-500/5 px-4 py-1.5 rounded-full border border-indigo-500/10 z-10 backdrop-blur-md">
+                   {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Simulation Matrix
                 </div>
                 
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col relative z-0">
                     {activeTab === 'visualizer' && (
                       <ArrayCanvas array={visualizedArray} maxValue={200} />
                     )}

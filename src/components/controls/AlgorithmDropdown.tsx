@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Search, Cpu } from 'lucide-react';
 import { useAlgorithmStore } from '../../state/useAlgorithmStore';
 
 interface Option {
@@ -36,40 +36,55 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, cat
   }, []);
 
   return (
-    <div className="relative w-full lg:w-64" ref={dropdownRef}>
-      <label className="absolute -top-2 left-3 bg-slate-900 px-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest z-10 transition-colors group-focus-within:text-indigo-400">
-        {label}
-      </label>
+    <div className="relative w-full lg:w-72 group" ref={dropdownRef}>
+      <div className="flex items-center gap-2 mb-1.5 ml-1">
+        <Cpu size={12} className="text-indigo-400" />
+        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{label}</span>
+      </div>
+      
       <button
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`group flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2.5 text-sm font-medium text-white transition-all hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`relative flex w-full items-center justify-between rounded-2xl border bg-slate-800/40 backdrop-blur-md px-4 py-3 text-sm font-bold text-white transition-all ring-offset-2 ring-offset-slate-900 focus:ring-2 focus:ring-indigo-500/50 
+          ${isOpen ? 'border-indigo-500/50 ring-2 ring-indigo-500/20' : 'border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/60 shadow-lg'}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span className="truncate">{selectedOption?.name || 'Select...'}</span>
-        <ChevronDown size={16} className={`text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <div className="flex items-center gap-3 truncate">
+          <div className={`w-2 h-2 rounded-full ${isOpen ? 'bg-indigo-400 animate-pulse' : 'bg-slate-600'}`} />
+          <span className="truncate">{selectedOption?.name || 'Select Algorithm...'}</span>
+        </div>
+        <ChevronDown size={18} className={`text-slate-500 transition-transform duration-500 ease-out ${isOpen ? 'rotate-180 text-indigo-400' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] z-50 w-full max-h-[400px] overflow-y-auto rounded-xl border border-slate-700 bg-slate-800 p-2 shadow-2xl animate-in fade-in slide-in-from-top-2">
-          {categories.map((category) => (
-            <div key={category.title} className="mb-2 last:mb-0">
-              <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                {category.title}
+        <div className="absolute top-[calc(100%+12px)] z-[100] w-full max-h-[460px] overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-900/95 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 duration-200">
+          <div className="p-2 overflow-y-auto max-h-[450px] custom-scrollbar">
+            {categories.map((category) => (
+              <div key={category.title} className="mb-3 last:mb-0">
+                <div className="px-3 py-2 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] flex items-center justify-between">
+                  {category.title}
+                  <div className="h-px flex-1 bg-slate-800/50 ml-3" />
+                </div>
+                <div className="grid gap-1">
+                  {category.options.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => { setSelectedAlgorithmId(option.id); setIsOpen(false); }}
+                      className={`group/opt flex w-full items-center justify-between px-3 py-2.5 text-sm font-semibold rounded-xl transition-all
+                        ${selectedAlgorithmId === option.id 
+                          ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-inner' 
+                          : 'text-slate-400 hover:bg-slate-800/80 hover:text-white'}`}
+                    >
+                      <span className="truncate">{option.name}</span>
+                      {selectedAlgorithmId === option.id && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_#818cf8]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {category.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => { setSelectedAlgorithmId(option.id); setIsOpen(false); }}
-                  className={`flex w-full items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
-                    ${selectedAlgorithmId === option.id 
-                      ? 'bg-indigo-600 text-white' 
-                      : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                >
-                  {option.name}
-                </button>
-              ))}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
