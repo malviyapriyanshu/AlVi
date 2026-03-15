@@ -21,7 +21,7 @@ export const NavRail: React.FC<NavRailProps> = ({ activeTab, onTabChange }) => {
 
   return (
     <nav
-      className="flex flex-row md:flex-col w-full md:w-14 bg-slate-950 items-center justify-around md:justify-start py-1 md:py-6 gap-1 md:gap-1 z-40 md:h-full shrink-0 border-t md:border-t-0 md:border-r border-slate-800/50"
+      className="flex flex-row md:flex-col w-full md:w-16 bg-slate-950 items-center overflow-x-auto md:overflow-visible no-scrollbar py-1.5 md:py-6 gap-2 md:gap-4 z-40 md:h-full shrink-0 border-b md:border-b-0 md:border-r border-slate-800/50 px-4 md:px-0"
       role="tablist"
       aria-label="Navigation"
     >
@@ -33,7 +33,7 @@ export const NavRail: React.FC<NavRailProps> = ({ activeTab, onTabChange }) => {
       </div>
 
       {/* Tab Buttons */}
-      <div className="flex flex-row md:flex-col gap-0.5 w-full justify-around md:justify-start items-center md:px-2">
+      <div className="flex flex-row md:flex-col gap-1 w-auto md:w-full items-center md:px-2 min-w-max md:min-w-0">
         {TABS.map(tab => {
           const isActive = activeTab === tab.id || (selectedCategory === tab.id && ['sorting', 'searching', 'tree', 'graph', 'dp', 'techniques'].includes(activeTab));
           return (

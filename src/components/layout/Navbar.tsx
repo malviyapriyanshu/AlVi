@@ -135,33 +135,41 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-slate-950/98 backdrop-blur-xl border-b border-slate-800 p-5 flex flex-col gap-5 max-h-[calc(100vh-64px)] overflow-y-auto z-40 animate-fade-in">
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Algorithm</span>
-            <AlgorithmDropdown label="Algorithm" />
-
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-slate-950/98 backdrop-blur-xl border-b border-slate-800 p-4 flex flex-col gap-4 max-h-[calc(100vh-64px)] overflow-y-auto z-40 animate-fade-in">
+          <div className="grid grid-cols-2 gap-3">
+             <div className="flex flex-col gap-1.5">
+               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Algorithm</span>
+               <AlgorithmDropdown label="Algorithm" />
+             </div>
+             <div className="flex flex-col gap-1.5">
+               <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Speed</span>
+               <SpeedSlider />
+             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Speed</span>
-            <SpeedSlider />
-          </div>
-          <div className="flex items-center justify-center gap-2 bg-slate-900 p-3 rounded-2xl border border-slate-800">
-            <button onClick={() => { onReset(); onMenuToggle(); }} className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all" aria-label="Reset">
-              <RotateCcw size={20} />
+          
+          <div className="flex items-center justify-center gap-1.5 bg-slate-900/50 p-2 rounded-xl border border-slate-800/50">
+            <button onClick={() => { onReset(); onMenuToggle(); }} className="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all" aria-label="Reset">
+              <RotateCcw size={18} />
             </button>
-            <button onClick={onStepBackward} disabled={isPlaying} className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30" aria-label="Step back">
-              <SkipBack size={20} />
+            <button onClick={onStepBackward} disabled={isPlaying} className="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30" aria-label="Step back">
+              <SkipBack size={18} />
             </button>
-            <button onClick={isPlaying ? onStop : onRun} className={`px-8 py-3 rounded-xl font-bold transition-all ${isPlaying ? 'bg-slate-800 text-white' : 'bg-indigo-500 text-white shadow-glow-indigo'}`} aria-label={isPlaying ? 'Pause' : 'Run'}>
-              {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
+            <button onClick={isPlaying ? onStop : onRun} className={`px-6 py-2.5 rounded-lg font-bold transition-all ${isPlaying ? 'bg-slate-800 text-white' : 'bg-indigo-500 text-white shadow-glow-indigo'}`} aria-label={isPlaying ? 'Pause' : 'Run'}>
+              {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
             </button>
-            <button onClick={onStepForward} disabled={isPlaying} className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30" aria-label="Step forward">
-              <SkipForward size={20} />
+            <button onClick={onStepForward} disabled={isPlaying} className="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30" aria-label="Step forward">
+              <SkipForward size={18} />
             </button>
           </div>
-          <div className="flex justify-between items-center bg-slate-900 px-4 py-3 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mastery</span>
-            <span className="text-lg font-mono font-bold text-indigo-400">{overallProgress}%</span>
+          
+          <div className="flex justify-between items-center bg-slate-900/50 px-4 py-2.5 rounded-xl border border-slate-800/50">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Mastery</span>
+              <span className="text-base font-mono font-bold text-indigo-400">{overallProgress}%</span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-[10px]">
+              PM
+            </div>
           </div>
         </div>
       )}

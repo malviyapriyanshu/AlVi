@@ -216,18 +216,18 @@ export default function App() {
                        style={{ backgroundImage: 'radial-gradient(rgba(148,163,184,0.4) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
                   {/* Header */}
-                  <div className="relative z-10 flex items-center justify-between px-5 py-3 border-b border-slate-800/50 shrink-0">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <h2 className="text-sm font-semibold text-slate-200">
-                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Simulation
+                  <div className="relative z-10 flex items-center justify-between px-3 md:px-5 py-2.5 md:py-3 border-b border-slate-800/50 shrink-0">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <h2 className="text-[11px] md:text-sm font-semibold text-slate-200 truncate max-w-[120px] md:max-w-none">
+                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} <span className="hidden xs:inline">Simulation</span><span className="xs:hidden">Sim</span>
                       </h2>
                     </div>
                     <button
                       onClick={handleNewArray}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[11px] font-semibold transition-all active:scale-95 border border-slate-700/50"
+                      className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[10px] md:text-[11px] font-semibold transition-all active:scale-95 border border-slate-700/50 shrink-0"
                     >
-                      <RotateCcw size={12} />
+                      <RotateCcw size={10} className="md:w-[12px] md:h-[12px]" />
                       <span>Regenerate</span>
                     </button>
                   </div>
@@ -242,7 +242,7 @@ export default function App() {
                   </div>
 
                   {/* Legend Footer */}
-                  <div className="relative z-10 px-5 py-2.5 border-t border-slate-800/50 shrink-0 flex flex-wrap items-center justify-center gap-5">
+                  <div className="relative z-10 px-3 md:px-5 py-2 md:py-2.5 border-t border-slate-800/50 shrink-0 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 md:gap-5">
                     <LegendItem color="bg-slate-600" label="Default" />
                     <LegendItem color="bg-amber-400" label="Comparing" />
                     <LegendItem color="bg-red-400" label="Swap" />
