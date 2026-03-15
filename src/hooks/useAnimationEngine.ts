@@ -56,15 +56,16 @@ export const useAnimationEngine = (): UseAnimationEngineReturn => {
 
   const applyStep = (prevArray: ArrayElement[], step: AnimationStep): ArrayElement[] => {
     const newArray = prevArray.map(item => ({ ...item }));
-    const [idx1, idx2] = step.indices;
+    const indices = step.indices || [];
+    const [idx1, idx2] = indices;
 
     switch (step.type) {
       case 'compare':
-        if (idx1 !== undefined) newArray[idx1] = { ...newArray[idx1], state: 'comparing' };
-        if (idx2 !== undefined) newArray[idx2] = { ...newArray[idx2], state: 'comparing' };
+        if (idx1 !== undefined && newArray[idx1]) newArray[idx1] = { ...newArray[idx1], state: 'comparing' };
+        if (idx2 !== undefined && newArray[idx2]) newArray[idx2] = { ...newArray[idx2], state: 'comparing' };
         break;
       case 'swap':
-        if (idx1 !== undefined && idx2 !== undefined) {
+        if (idx1 !== undefined && idx2 !== undefined && newArray[idx1] && newArray[idx2]) {
           newArray[idx1] = { ...newArray[idx1], state: 'swapping' };
           newArray[idx2] = { ...newArray[idx2], state: 'swapping' };
           const temp = newArray[idx1].value;
@@ -73,18 +74,18 @@ export const useAnimationEngine = (): UseAnimationEngineReturn => {
         }
         break;
       case 'overwrite':
-        if (idx1 !== undefined && step.value !== undefined) {
+        if (idx1 !== undefined && step.value !== undefined && newArray[idx1]) {
           newArray[idx1] = { value: step.value, state: 'swapping', pointers: newArray[idx1].pointers };
         }
         break;
       case 'clear':
-        if (idx1 !== undefined) newArray[idx1] = { ...newArray[idx1], state: 'default' };
-        if (idx2 !== undefined) newArray[idx2] = { ...newArray[idx2], state: 'default' };
+        if (idx1 !== undefined && newArray[idx1]) newArray[idx1] = { ...newArray[idx1], state: 'default' };
+        if (idx2 !== undefined && newArray[idx2]) newArray[idx2] = { ...newArray[idx2], state: 'default' };
         break;
       case 'found':
       case 'mark_found':
       case 'found_result':
-        step.indices.forEach(idx => {
+        indices.forEach(idx => {
           if (newArray[idx]) newArray[idx] = { ...newArray[idx], state: 'found' };
         });
         break;
@@ -102,12 +103,12 @@ export const useAnimationEngine = (): UseAnimationEngineReturn => {
         break;
       case 'mark_discarded':
       case 'discard_range':
-        step.indices.forEach(idx => {
+        indices.forEach(idx => {
           if (newArray[idx]) newArray[idx] = { ...newArray[idx], state: 'discarded', pointers: [] };
         });
         break;
       case 'highlight_range':
-        step.indices.forEach(idx => {
+        indices.forEach(idx => {
           if (newArray[idx]) newArray[idx] = { ...newArray[idx], state: 'highlighted' };
         });
         break;

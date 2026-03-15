@@ -8,11 +8,6 @@ export const exponentialSearchInfo: AlgorithmInfo = {
     time: { best: 'Ω(1)', average: 'Θ(log N)', worst: 'O(log N)' },
     space: 'O(1)',
   },
-  problemContext: {
-    title: 'Search Insert Position',
-    link: 'https://leetcode.com/problems/search-insert-position/',
-    difficulty: 'Easy',
-  },
   intuition: 'Instead of checking every position, you take increasingly larger jumps (1, 2, 4, 8, 16...) until you overshoot, then perform binary search in the last valid range.',
   analogy: 'Like searching for a page in a book by flipping forward in larger and larger chunks until you pass the page, then flipping back page by page.',
   stepByStep: [

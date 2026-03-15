@@ -3,15 +3,14 @@ import {
 } from 'lucide-react';
 
 export const TABS = [
-  { id: 'visualizer', label: 'Visualizer', icon: BarChart3 },
-  { id: 'graph',      label: 'Graphs',     icon: GitBranch },
-  { id: 'tree',       label: 'Trees',      icon: TreePine },
-  { id: 'dp',         label: 'Dynamic Programming', icon: Layers },
-  { id: 'compare',    label: 'Compare',    icon: BarChart2 },
-  { id: 'code',       label: 'Code It',    icon: Code2 },
-  { id: 'playground', label: 'Playground', icon: Wand2 },
+  { id: 'sorting',    label: 'Sorting',    icon: BarChart3 },
+  { id: 'searching',  label: 'Searching',  icon: Map },
+  { id: 'tree',       label: 'Tree',       icon: TreePine },
+  { id: 'graph',      label: 'Graph',      icon: GitBranch },
+  { id: 'dp',         label: 'DP',         icon: Layers },
+  { id: 'techniques', label: 'Techniques', icon: Wand2 },
   { id: 'quiz',       label: 'Quiz',       icon: Trophy },
-  { id: 'paths',      label: 'Learn',      icon: Map },
+  { id: 'paths',      label: 'Learn',      icon: BarChart2 },
 ] as const;
 
 export type TabId = typeof TABS[number]['id'];

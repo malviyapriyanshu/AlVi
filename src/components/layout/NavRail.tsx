@@ -1,5 +1,6 @@
 import React from 'react';
 import { TABS, TabId } from '../../app/routes';
+import { useAlgorithmStore } from '../../state/useAlgorithmStore';
 
 interface NavRailProps {
   activeTab: TabId;
@@ -7,53 +8,74 @@ interface NavRailProps {
 }
 
 export const NavRail: React.FC<NavRailProps> = ({ activeTab, onTabChange }) => {
+  const { selectedCategory, setSelectedCategory } = useAlgorithmStore();
+
+  const handleCategoryClick = (id: TabId) => {
+    // Categories that map directly to algorithm groups
+    const algoCategories = ['sorting', 'searching', 'tree', 'graph', 'dp', 'techniques'];
+    if (algoCategories.includes(id)) {
+      setSelectedCategory(id);
+    }
+    onTabChange(id);
+  };
+
   return (
-    <nav className="flex flex-col w-20 glass-panel items-center py-8 gap-8 z-50">
-      <div className="mb-4">
-         <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/40 rotate-3 hover:rotate-0 transition-transform cursor-pointer">
-            <span className="font-black text-white text-xl">A</span>
-         </div>
+    <nav
+      className="flex flex-row md:flex-col w-full md:w-14 bg-slate-950 items-center justify-around md:justify-start py-1 md:py-6 gap-1 md:gap-1 z-40 md:h-full shrink-0 border-t md:border-t-0 md:border-r border-slate-800/50"
+      role="tablist"
+      aria-label="Navigation"
+    >
+      {/* Logo mark — desktop only */}
+      <div className="hidden md:flex mb-5 items-center justify-center">
+        <div className="w-8 h-8 bg-indigo-500 rounded-xl flex items-center justify-center cursor-pointer transition-transform hover:scale-110 hover:rotate-[-6deg] duration-200">
+          <span className="font-bold text-white text-sm leading-none">A</span>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 w-full items-center">
+      {/* Tab Buttons */}
+      <div className="flex flex-row md:flex-col gap-0.5 w-full justify-around md:justify-start items-center md:px-2">
         {TABS.map(tab => {
-          const isActive = activeTab === tab.id;
+          const isActive = activeTab === tab.id || (selectedCategory === tab.id && ['sorting', 'searching', 'tree', 'graph', 'dp', 'techniques'].includes(activeTab));
           return (
             <button
               key={tab.id}
-              onClick={() => onTabChange(tab.id as TabId)}
-              className={`group relative p-3.5 rounded-2xl transition-all duration-500 
-                ${isActive 
-                  ? 'bg-indigo-600/10 text-indigo-400 shadow-inner shadow-indigo-500/10' 
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40'}`}
+              onClick={() => handleCategoryClick(tab.id as TabId)}
+              role="tab"
+              aria-selected={isActive}
+              aria-label={tab.label}
+              title={tab.label}
+              className={`group relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200
+                ${isActive
+                  ? 'bg-indigo-500/15 text-indigo-400'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'}`}
             >
-              {/* Active bar indicator */}
+              {/* Active indicator — desktop left bar */}
               {isActive && (
-                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-indigo-500 rounded-r-full shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-in fade-in slide-in-from-left-2" />
+                <div className="hidden md:block absolute -left-[9px] top-1/2 -translate-y-1/2 w-[3px] h-5 bg-indigo-500 rounded-r-full" />
+              )}
+              {/* Active indicator — mobile bottom dot */}
+              {isActive && (
+                <div className="md:hidden absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-indigo-500 rounded-full" />
               )}
 
-              <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
-                {React.createElement(tab.icon as any, { 
-                    size: 22, 
-                    strokeWidth: isActive ? 2.5 : 2 
-                })}
-              </div>
+              {React.createElement(tab.icon as any, {
+                size: 18,
+                strokeWidth: isActive ? 2.5 : 1.8
+              })}
 
               {/* Tooltip */}
-              <div className="absolute left-[calc(100%+1.5rem)] top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-800 text-[11px] font-black text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 pointer-events-none whitespace-nowrap z-[100] border border-slate-700 shadow-2xl">
+              <div className="hidden md:block absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-slate-800 text-[11px] font-semibold text-slate-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] border border-slate-700/50 shadow-glass">
                 {tab.label}
-                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45" />
               </div>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-auto flex flex-col gap-6 items-center">
-         <div className="w-8 h-px bg-slate-800/50" />
-         <button className="text-slate-600 hover:text-indigo-400 transition-colors p-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-         </button>
+      {/* Bottom status */}
+      <div className="mt-auto hidden md:flex flex-col gap-3 items-center pb-4">
+        <div className="w-5 h-px bg-slate-800" />
+        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Engine Active" />
       </div>
     </nav>
   );

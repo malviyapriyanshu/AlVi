@@ -8,10 +8,10 @@ interface ArrayCanvasProps {
 
 export const ArrayCanvas: React.FC<ArrayCanvasProps> = ({ array, maxValue }) => {
   return (
-    <div className="flex-1 w-full flex items-center justify-center py-20 overflow-visible mt-10 mb-10">
-      <div className="flex items-end justify-center gap-1 w-full max-w-5xl h-[350px]">
+    <div className="flex-1 w-full flex flex-col items-center justify-center px-6 py-6">
+      <div className="flex flex-1 items-end justify-center gap-[2px] md:gap-1 w-full max-w-5xl">
         {array.map((item, idx) => (
-          <ArrayBar 
+          <ArrayBar
             key={idx}
             value={item.value}
             maxValue={maxValue}

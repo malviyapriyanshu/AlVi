@@ -12,7 +12,12 @@ import { dfs, dfsInfo } from '../algorithms/graph/dfs';
 import { dijkstra, dijkstraInfo } from '../algorithms/graph/dijkstra';
 import { fibonacciDP, fibonacciInfo } from '../algorithms/dp/fibonacciDP';
 import { coinChange, coinChangeInfo } from '../algorithms/dp/coinChange';
-import { inorderTraversal, inorderInfo } from '../algorithms/tree/traversals';
+import {
+  inorderTraversal, inorderInfo,
+  preorderTraversal, preorderInfo,
+  postorderInfo, postorderTraversal,
+  levelOrderInfo, levelOrderTraversal,
+} from '../algorithms/tree/traversals';
 
 export const algorithmRegistry: Record<string, AlgorithmEntry> = {
   bubble: { id: 'bubble', info: bubbleSortInfo, run: bubbleSort },
@@ -29,6 +34,9 @@ export const algorithmRegistry: Record<string, AlgorithmEntry> = {
   fib: { id: 'fib', info: fibonacciInfo, run: (n) => fibonacciDP(n) },
   coin: { id: 'coin', info: coinChangeInfo, run: (coins, amt) => coinChange(coins, amt) },
   inorder: { id: 'inorder', info: inorderInfo, run: (root) => inorderTraversal(root) },
+  preorder: { id: 'preorder', info: preorderInfo, run: (root) => preorderTraversal(root) },
+  postorder: { id: 'postorder', info: postorderInfo, run: (root) => postorderTraversal(root) },
+  levelorder: { id: 'levelorder', info: levelOrderInfo, run: (root) => levelOrderTraversal(root) },
 };
 
 export const algorithmCategories = [
@@ -59,16 +67,19 @@ export const algorithmCategories = [
     ],
   },
   {
+    title: 'Tree Traversals',
+    options: [
+      { id: 'inorder', name: 'Inorder Traversal (LNR)' },
+      { id: 'preorder', name: 'Preorder Traversal (NLR)' },
+      { id: 'postorder', name: 'Postorder Traversal (LRN)' },
+      { id: 'levelorder', name: 'Level-Order Traversal (BFS)' },
+    ],
+  },
+  {
     title: 'Dynamic Programming',
     options: [
       { id: 'fib', name: 'Fibonacci' },
       { id: 'coin', name: 'Coin Change' },
-    ],
-  },
-  {
-    title: 'Tree Traversals',
-    options: [
-      { id: 'inorder', name: 'Inorder Traversal' },
     ],
   },
 ];

@@ -1,44 +1,64 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Search, Cpu, Terminal, Sparkles } from 'lucide-react';
+import { ChevronDown, Search, Terminal, Sparkles } from 'lucide-react';
 import { useAlgorithmStore } from '../../state/useAlgorithmStore';
-
-interface Option {
-  id: string;
-  name: string;
-}
-
-interface Category {
-  title: string;
-  options: Option[];
-}
+import { ALL_ALGORITHMS, ALGORITHM_CATEGORIES } from '../../data/algorithmRegistry';
+import { AlgorithmEntry } from '../../types/algorithmTypes';
 
 interface AlgorithmDropdownProps {
   label: string;
-  categories: Category[];
   disabled?: boolean;
 }
 
-export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, categories, disabled }) => {
-  const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
+export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, disabled }) => {
+  const { selectedAlgorithmId, setSelectedAlgorithmId, selectedCategory } = useAlgorithmStore();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedOption = useMemo(() => 
-    categories.flatMap(c => c.options).find(o => o.id === selectedAlgorithmId),
-    [categories, selectedAlgorithmId]
-  );
+  const filteredAlgorithms = useMemo(() => {
+    const categoryIds = (ALGORITHM_CATEGORIES as any)[selectedCategory] || [];
+    const algorithms = categoryIds.map((id: string) => ALL_ALGORITHMS[id]).filter(Boolean) as AlgorithmEntry[];
+    
+    if (!searchQuery) return algorithms;
+    return algorithms.filter(algo => 
+      algo.info.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [selectedCategory, searchQuery]);
 
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery) return categories;
-    return categories.map(cat => ({
-      ...cat,
-      options: cat.options.filter(opt => 
-        opt.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    })).filter(cat => cat.options.length > 0);
-  }, [categories, searchQuery]);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOpen) {
+      if (e.key === 'Enter' || e.key === 'ArrowDown') setIsOpen(true);
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setActiveIndex(prev => (prev + 1) % filteredAlgorithms.length);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setActiveIndex(prev => (prev - 1 + filteredAlgorithms.length) % filteredAlgorithms.length);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredAlgorithms[activeIndex]) {
+          setSelectedAlgorithmId(filteredAlgorithms[activeIndex].id);
+          setIsOpen(false);
+        }
+        break;
+      case 'Escape':
+        setIsOpen(false);
+        break;
+    }
+  };
+
+  const selectedOption = useMemo(() => 
+    ALL_ALGORITHMS[selectedAlgorithmId]?.info,
+    [selectedAlgorithmId]
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,77 +78,79 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, cat
   }, [isOpen]);
 
   return (
-    <div className="relative w-full group" ref={dropdownRef}>
+    <div className="relative w-full" ref={dropdownRef}>
       <button
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`relative flex w-full items-center justify-between rounded-2xl border bg-slate-950/40 backdrop-blur-xl px-4 py-3 text-sm font-bold text-white transition-all 
-          ${isOpen ? 'border-primary/50 ring-4 ring-primary/10' : 'border-slate-800 hover:border-slate-700 hover:bg-slate-900/60 shadow-2xl'}
+        onKeyDown={handleKeyDown}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        className={`relative flex w-full items-center justify-between rounded-xl border bg-slate-800/50 px-3 py-2.5 text-sm font-semibold text-white transition-all
+          ${isOpen ? 'border-indigo-500/50 ring-2 ring-indigo-500/20' : 'border-slate-700/50 hover:border-slate-600 hover:bg-slate-800'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <div className="flex items-center gap-3 truncate">
-          <div className="bg-primary/20 p-1.5 rounded-lg border border-primary/20">
-             <Terminal size={14} className="text-primary" />
+        <div className="flex items-center gap-2.5 truncate">
+          <div className="bg-indigo-500/15 p-1.5 rounded-lg border border-indigo-500/20">
+            <Terminal size={12} className="text-indigo-400" />
           </div>
-          <div className="flex flex-col items-start leading-none gap-1">
-             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</span>
-             <span className="truncate text-slate-100">{selectedOption?.name || 'Search...'}</span>
+          <div className="flex flex-col items-start leading-none gap-0.5">
+            <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
+            <span className="truncate text-slate-200 text-xs">{selectedOption?.name || 'Select...'}</span>
           </div>
         </div>
-        <ChevronDown size={16} className={`text-slate-500 transition-transform duration-500 ${isOpen ? 'rotate-180 text-primary' : ''}`} />
+        <ChevronDown size={14} className={`text-slate-500 transition-transform ${isOpen ? 'rotate-180 text-indigo-400' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+12px)] z-[100] w-full min-w-[320px] rounded-[2rem] border border-slate-800 bg-slate-900/95 backdrop-blur-2xl shadow-[0_40px_100px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
-          {/* Search Header */}
-          <div className="p-4 border-b border-slate-800 bg-slate-950/50">
-             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
-                <input 
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Type to search algorithm..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-primary/50 transition-all shadow-inner"
-                />
-             </div>
+        <div className="absolute top-[calc(100%+8px)] z-[100] w-full min-w-[300px] rounded-2xl border border-slate-700/50 bg-slate-900 backdrop-blur-xl shadow-glass animate-fade-in overflow-hidden" role="listbox">
+          {/* Search */}
+          <div className="p-3 border-b border-slate-800">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={13} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search algorithm..."
+                value={searchQuery}
+                onKeyDown={handleKeyDown}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 transition-all"
+              />
+            </div>
           </div>
 
-          {/* List Content */}
-          <div className="p-2 overflow-y-auto max-h-[400px] custom-scrollbar">
-            {filteredCategories.length > 0 ? filteredCategories.map((category) => (
-              <div key={category.title} className="mb-4 last:mb-0">
-                <div className="px-3 py-2 flex items-center gap-3">
-                   <div className="h-px flex-1 bg-slate-800/80" />
-                   <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{category.title}</span>
-                   <div className="h-px flex-1 bg-slate-800/80" />
-                </div>
-                <div className="grid gap-1 mt-1">
-                  {category.options.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => { setSelectedAlgorithmId(option.id); setIsOpen(false); }}
-                      className={`group/opt flex w-full items-center justify-between px-3 py-3 text-[13px] font-bold rounded-xl transition-all
-                        ${selectedAlgorithmId === option.id 
-                          ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02]' 
-                          : 'text-slate-400 hover:bg-slate-800/80 hover:text-white hover:translate-x-1'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {selectedAlgorithmId === option.id ? <Sparkles size={12} className="text-white animate-pulse" /> : <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover/opt:bg-primary transition-colors" />}
-                        <span className="truncate">{option.name}</span>
-                      </div>
-                      {selectedAlgorithmId === option.id && (
-                        <div className="bg-white/20 px-2 py-0.5 rounded text-[8px] uppercase tracking-tighter">Active</div>
-                      )}
-                    </button>
-                  ))}
-                </div>
+          {/* Options */}
+          <div className="p-2 overflow-y-auto max-h-[350px] custom-scrollbar">
+            {filteredAlgorithms.length > 0 ? (
+              <div className="flex flex-col gap-0.5 mt-1">
+                {filteredAlgorithms.map((algo: AlgorithmEntry, index: number) => (
+                  <button
+                    key={algo.id}
+                    onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    role="option"
+                    aria-selected={selectedAlgorithmId === algo.id || activeIndex === index}
+                    className={`flex w-full items-center justify-between px-3 py-2.5 text-[12px] font-semibold rounded-xl transition-all
+                      ${(selectedAlgorithmId === algo.id || activeIndex === index)
+                        ? 'bg-indigo-500 text-white shadow-glow-indigo'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {selectedAlgorithmId === algo.id
+                        ? <Sparkles size={11} className="text-white" />
+                        : <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />}
+                      <span className="truncate">{algo.info.name}</span>
+                    </div>
+                    {selectedAlgorithmId === algo.id && (
+                      <span className="bg-white/20 px-1.5 py-0.5 rounded text-[8px] uppercase tracking-tight">Active</span>
+                    )}
+                  </button>
+                ))}
               </div>
-            )) : (
-              <div className="py-12 text-center">
-                 <Search size={32} className="mx-auto text-slate-800 mb-3" />
-                 <p className="text-xs font-bold text-slate-600">No algorithms found match "{searchQuery}"</p>
+            ) : (
+              <div className="py-10 text-center">
+                <Search size={28} className="mx-auto text-slate-700 mb-2" />
+                <p className="text-xs text-slate-600 font-medium">No results for "{searchQuery}"</p>
               </div>
             )}
           </div>

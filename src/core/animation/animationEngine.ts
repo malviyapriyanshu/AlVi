@@ -2,14 +2,10 @@ import { useRef, useCallback, useEffect } from 'react';
 import { usePlaybackStore } from '../../state/usePlaybackStore';
 import { AnimationStep } from '../../types/animationTypes';
 
-/**
- * useAnimationActions provides functions to control the playback store.
- * It does NOT contain any side-effects like timers.
- */
 export const useAnimationActions = () => {
-  const { 
+  const {
     currentStepIndex, totalSteps,
-    setIsPlaying, setIsPaused, setCurrentStepIndex, setTotalSteps, setSteps 
+    setIsPlaying, setIsPaused, setCurrentStepIndex, setTotalSteps, setSteps
   } = usePlaybackStore();
 
   const stop = useCallback(() => {
@@ -26,8 +22,15 @@ export const useAnimationActions = () => {
     setIsPaused(false);
   }, [setCurrentStepIndex, setIsPlaying, setIsPaused, setSteps, setTotalSteps]);
 
-  const pause = useCallback(() => setIsPaused(true), [setIsPaused]);
-  const resume = useCallback(() => setIsPaused(false), [setIsPaused]);
+  const pause = useCallback(() => {
+    setIsPlaying(false);
+    setIsPaused(true);
+  }, [setIsPlaying, setIsPaused]);
+
+  const resume = useCallback(() => {
+    setIsPlaying(true);
+    setIsPaused(false);
+  }, [setIsPlaying, setIsPaused]);
 
   const nextStep = useCallback(() => {
     setCurrentStepIndex(Math.min(currentStepIndex + 1, totalSteps - 1));
@@ -40,38 +43,36 @@ export const useAnimationActions = () => {
   return { play, stop, pause, resume, nextStep, prevStep };
 };
 
-/**
- * useAnimationDriver contains the timer logic that drives the animation.
- * It should ONLY be used once in the application (e.g., in App.tsx) 
- * to avoid multiple intervals competing for state updates.
- */
 export const useAnimationDriver = () => {
-  const { 
+  const {
     isPlaying, isPaused, speed, currentStepIndex, totalSteps,
-    setCurrentStepIndex, setIsPlaying 
+    setCurrentStepIndex, setIsPlaying
   } = usePlaybackStore();
 
-  const timerRef = useRef<number | null>(null);
+  const stepRef = useRef(currentStepIndex);
+  stepRef.current = currentStepIndex;
 
   useEffect(() => {
     if (isPlaying && !isPaused && currentStepIndex < totalSteps - 1) {
-      timerRef.current = window.setInterval(() => {
-        // Increment step
-        setCurrentStepIndex(currentStepIndex + 1);
+      const timer = window.setInterval(() => {
+        const next = stepRef.current + 1;
+        if (next >= totalSteps) {
+          setIsPlaying(false);
+          window.clearInterval(timer);
+        } else {
+          setCurrentStepIndex(next);
+        }
       }, speed);
+
+      return () => window.clearInterval(timer);
     } else if (currentStepIndex >= totalSteps - 1 && isPlaying) {
       setIsPlaying(false);
     }
-
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [isPlaying, isPaused, currentStepIndex, totalSteps, speed, setCurrentStepIndex, setIsPlaying]);
+  }, [isPlaying, isPaused, speed, totalSteps, setCurrentStepIndex, setIsPlaying]);
 };
 
-// Keep deprecated name for compatibility temporarily if needed, but we should refactor
 export const useAnimationEngineCore = () => {
-    const actions = useAnimationActions();
-    useAnimationDriver();
-    return actions;
+  const actions = useAnimationActions();
+  useAnimationDriver();
+  return actions;
 };

@@ -8,11 +8,6 @@ export const heapSortInfo: AlgorithmInfo = {
     time: { best: 'Ω(N log N)', average: 'Θ(N log N)', worst: 'O(N log N)' },
     space: 'O(1)',
   },
-  problemContext: {
-    title: 'Kth Largest Element',
-    link: 'https://leetcode.com/problems/kth-largest-element-in-an-array/',
-    difficulty: 'Medium',
-  },
   intuition: 'Imagine a tournament bracket. The winner of each match moves up. The overall champion (max element) is at the top. We remove the champion, reorganize the tournament, and find the next champion.',
   analogy: 'A sports tournament where the strongest player always rises to the top. Once crowned, they step aside, and the remaining players compete again.',
   stepByStep: [

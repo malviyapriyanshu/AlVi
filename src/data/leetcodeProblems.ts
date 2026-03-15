@@ -1,6 +1,7 @@
 import type { LeetCodeProblem } from '../types';
 
 export const leetcodeProblems: LeetCodeProblem[] = [
+  // ===================== SORTING =====================
   {
     algorithmId: 'bubble',
     title: 'Sort an Array',
@@ -41,6 +42,7 @@ export const leetcodeProblems: LeetCodeProblem[] = [
       'Average time: O(N), worst case O(N²).'
     ],
   },
+  // ===================== SEARCHING & TECHNIQUES =====================
   {
     algorithmId: 'binary',
     title: 'Search in Rotated Sorted Array',
@@ -79,6 +81,130 @@ export const leetcodeProblems: LeetCodeProblem[] = [
       'Expand the window by moving right.',
       'If a duplicate is found, shrink from the left until no duplicates.',
       'Track the maximum window size seen.'
+    ],
+  },
+  // ===================== GRAPH =====================
+  {
+    algorithmId: 'bfs',
+    title: 'Number of Islands',
+    link: 'https://leetcode.com/problems/number-of-islands/',
+    difficulty: 'Medium',
+    description: 'Given an m×n 2D grid of "1"s (land) and "0"s (water), count the number of islands. An island is surrounded by water and is formed by connecting adjacent lands.',
+    solutionSteps: [
+      'Iterate through every cell in the grid.',
+      'When a "1" is found, increment the island count.',
+      'Use BFS to explore all connected "1"s and mark them visited.',
+      'Continue until all cells are processed.'
+    ],
+  },
+  {
+    algorithmId: 'dfs',
+    title: 'Clone Graph',
+    link: 'https://leetcode.com/problems/clone-graph/',
+    difficulty: 'Medium',
+    description: 'Given a reference to a node in a connected undirected graph, return a deep copy (clone) of the graph.',
+    solutionSteps: [
+      'Use DFS to traverse the original graph.',
+      'For each node, create a clone and store it in a hash map.',
+      'For each neighbor, recursively clone if not yet cloned.',
+      'Connect the cloned node to its cloned neighbors.'
+    ],
+  },
+  {
+    algorithmId: 'dijkstra',
+    title: 'Network Delay Time',
+    link: 'https://leetcode.com/problems/network-delay-time/',
+    difficulty: 'Medium',
+    description: 'There are n network nodes. Given a list of travel times as directed edges, determine how long it takes for a signal to reach all nodes from a given source.',
+    solutionSteps: [
+      'Build an adjacency list from the edges.',
+      'Use Dijkstra\'s algorithm with a min-heap.',
+      'Process the node with the smallest distance first.',
+      'Update distances to neighbors if a shorter path is found.',
+      'The answer is the maximum distance among all nodes.'
+    ],
+  },
+  // ===================== TREE =====================
+  {
+    algorithmId: 'inorder',
+    title: 'Binary Tree Inorder Traversal',
+    link: 'https://leetcode.com/problems/binary-tree-inorder-traversal/',
+    difficulty: 'Easy',
+    description: 'Given the root of a binary tree, return the inorder traversal of its nodes\' values (Left → Root → Right).',
+    solutionSteps: [
+      'If the current node is null, return.',
+      'Recursively traverse the left subtree.',
+      'Visit (record) the current node.',
+      'Recursively traverse the right subtree.',
+      'For a BST, this gives sorted order.'
+    ],
+  },
+  {
+    algorithmId: 'preorder',
+    title: 'Binary Tree Preorder Traversal',
+    link: 'https://leetcode.com/problems/binary-tree-preorder-traversal/',
+    difficulty: 'Easy',
+    description: 'Given the root of a binary tree, return the preorder traversal of its nodes\' values (Root → Left → Right).',
+    solutionSteps: [
+      'Visit (record) the current node first.',
+      'Recursively traverse the left subtree.',
+      'Recursively traverse the right subtree.',
+      'This order is useful for serialization and tree copying.'
+    ],
+  },
+  {
+    algorithmId: 'postorder',
+    title: 'Binary Tree Postorder Traversal',
+    link: 'https://leetcode.com/problems/binary-tree-postorder-traversal/',
+    difficulty: 'Easy',
+    description: 'Given the root of a binary tree, return the postorder traversal of its nodes\' values (Left → Right → Root).',
+    solutionSteps: [
+      'Recursively traverse the left subtree.',
+      'Recursively traverse the right subtree.',
+      'Visit (record) the current node last.',
+      'This order is useful for deleting trees and evaluating expressions.'
+    ],
+  },
+  {
+    algorithmId: 'levelorder',
+    title: 'Binary Tree Level Order Traversal',
+    link: 'https://leetcode.com/problems/binary-tree-level-order-traversal/',
+    difficulty: 'Medium',
+    description: 'Given the root of a binary tree, return the level order traversal of its nodes\' values (i.e., from left to right, level by level).',
+    solutionSteps: [
+      'Initialize a queue with the root node.',
+      'While the queue is not empty, dequeue a node.',
+      'Record the node\'s value.',
+      'Enqueue the node\'s left and right children if they exist.',
+      'Group results by level for the final output.'
+    ],
+  },
+  // ===================== DP =====================
+  {
+    algorithmId: 'fib',
+    title: 'Fibonacci Number',
+    link: 'https://leetcode.com/problems/fibonacci-number/',
+    difficulty: 'Easy',
+    description: 'The Fibonacci numbers form a sequence where each number is the sum of the two preceding ones. Given n, calculate F(n).',
+    solutionSteps: [
+      'Base cases: F(0) = 0, F(1) = 1.',
+      'Use a DP table to store computed values.',
+      'For each i from 2 to n: dp[i] = dp[i-1] + dp[i-2].',
+      'Return dp[n].'
+    ],
+  },
+  {
+    algorithmId: 'coin',
+    title: 'Coin Change',
+    link: 'https://leetcode.com/problems/coin-change/',
+    difficulty: 'Medium',
+    description: 'Given coins of different denominations and a total amount, find the fewest number of coins needed to make up that amount.',
+    solutionSteps: [
+      'Create a DP array of size amount+1, filled with Infinity.',
+      'Set dp[0] = 0 (base case: 0 coins for amount 0).',
+      'For each amount from 1 to target, try each coin.',
+      'dp[i] = min(dp[i], dp[i - coin] + 1) if coin <= i.',
+      'Return dp[amount] if it\'s not Infinity, else -1.'
     ],
   },
 ];

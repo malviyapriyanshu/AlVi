@@ -1,9 +1,7 @@
 import React from 'react';
-import { Layers, Play, SkipForward, SkipBack, RotateCcw, StopCircle, Code2, Presentation, Pause } from 'lucide-react';
+import { Layers, Play, SkipForward, SkipBack, RotateCcw, Pause, Menu, X, Code2, Presentation } from 'lucide-react';
 import { AlgorithmDropdown } from '../controls/AlgorithmDropdown';
 import { SpeedSlider } from '../controls/SpeedSlider';
-import { algorithmCategories } from '../../data/algorithmMetadata';
-
 interface NavbarProps {
   overallProgress: number;
   onMenuToggle: () => void;
@@ -18,104 +16,155 @@ interface NavbarProps {
   isPlaying?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ 
-  overallProgress, onRun, onStop, onStepForward, onStepBackward, onReset, 
-  selectedAlgorithmId, onAlgorithmChange, isPlaying 
+export const Navbar: React.FC<NavbarProps> = ({
+  overallProgress, onRun, onStop, onStepForward, onStepBackward, onReset,
+  selectedAlgorithmId, onAlgorithmChange, isPlaying, onMenuToggle, isMenuOpen
 }) => {
   return (
-    <header className="sticky top-0 z-50 bg-slate-900 border-b border-white/5 shadow-2xl glass-card rounded-none border-t-0 border-x-0">
-      <div className="flex items-center justify-between gap-6 h-20 px-6">
-        
-        {/* Logo Section */}
-        <div className="flex items-center gap-4 min-w-max group cursor-pointer">
-          <div className="bg-indigo-600 p-2.5 rounded-2xl shadow-indigo-500/20 shadow-lg group-hover:rotate-12 transition-transform">
-            <Layers className="text-white" size={20} />
+    <header className="sticky top-0 z-50 h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 shrink-0">
+      <div className="flex items-center h-full px-4 gap-4">
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 shrink-0 cursor-pointer group">
+          <div className="bg-indigo-500 p-2 rounded-xl group-hover:scale-105 transition-transform">
+            <Layers className="text-white" size={18} strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col">
-              <h1 className="text-xl font-black tracking-tighter leading-none">
-                Algo<span className="text-indigo-500">Vis</span>
-              </h1>
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 mt-0.5">Engine v2.1</span>
+          <div className="hidden sm:flex flex-col leading-none">
+            <h1 className="text-base font-extrabold tracking-tight text-white">
+              Algo<span className="text-slate-400">Vis</span>
+            </h1>
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-slate-500">v3.0</span>
           </div>
         </div>
 
-        <div className="h-10 w-px bg-slate-800 mx-2" />
+        <div className="h-8 w-px bg-slate-800 shrink-0 hidden lg:block" />
 
-        {/* Central Controls */}
-        <div className="flex-1 flex items-center gap-8">
-           <div className="w-80">
-              <AlgorithmDropdown 
-                label="Algorithm" 
-                categories={algorithmCategories}
-              />
-           </div>
-           
-           <div className="w-48">
-              <SpeedSlider />
-           </div>
-
-           <div className="flex items-center gap-1.5 bg-slate-950/50 p-1.5 rounded-2xl border border-white/5 shadow-inner">
-              <button 
-                onClick={onReset} 
-                className="p-3 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all active:scale-90"
-                title="Reset simulation"
-              >
-                <RotateCcw size={18} />
-              </button>
-              <button 
-                onClick={onStepBackward} 
-                disabled={isPlaying}
-                className="p-3 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all active:scale-90 disabled:opacity-20"
-                title="Step backward"
-              >
-                <SkipBack size={18} />
-              </button>
-              
-              <button 
-                 onClick={isPlaying ? onStop : onRun}
-                 className={`p-3 rounded-xl transition-all transform active:scale-90 shadow-xl ${isPlaying ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20' : 'bg-emerald-500 text-white shadow-emerald-500/40'}`}
-                 title={isPlaying ? 'Stop' : 'Run Algorithm'}
-              >
-                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-              </button>
-
-              <button 
-                onClick={onStepForward} 
-                disabled={isPlaying}
-                className="p-3 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-xl transition-all active:scale-90 disabled:opacity-20"
-                title="Step forward"
-              >
-                <SkipForward size={18} />
-              </button>
-           </div>
+        {/* Algorithm Selector */}
+        <div className="hidden lg:block w-64 shrink-0">
+          <AlgorithmDropdown label="Algorithm" />
         </div>
 
-        {/* Right Section: Mode & Progress */}
-        <div className="flex items-center gap-8">
-           <div className="flex items-center gap-1 bg-slate-800/50 p-1 rounded-xl border border-slate-700/50">
-              <button className="flex items-center gap-2 px-4 py-1.5 bg-indigo-600 rounded-lg text-[10px] font-black text-white shadow-lg">
-                <Presentation size={12} />
-                <span>VISUALIZER</span>
-              </button>
-              <button className="flex items-center gap-2 px-4 py-1.5 text-slate-400 hover:text-white transition-colors text-[10px] font-black">
-                <Code2 size={12} />
-                <span>PROBLEMS</span>
-              </button>
-           </div>
-
-           <div className="h-10 w-px bg-slate-800" />
-           
-           <div className="flex items-center gap-4">
-              <div className="flex flex-col items-end gap-1">
-                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none text-slate-600">Mastery</span>
-                 <span className="text-xs font-mono font-black text-indigo-400 leading-none">{overallProgress}%</span>
-              </div>
-              <div className="w-10 h-10 rounded-2xl border-2 border-indigo-500 bg-slate-800 flex items-center justify-center text-indigo-400 font-black text-xs shadow-premium">
-                PM
-              </div>
-           </div>
+        {/* Speed Slider */}
+        <div className="hidden xl:block w-48 shrink-0">
+          <SpeedSlider />
         </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Playback Controls — Center Island */}
+        <div className="hidden md:flex items-center" role="toolbar" aria-label="Playback controls">
+          <div className="flex items-center bg-slate-800/60 border border-slate-700/50 rounded-2xl p-1 gap-0.5">
+            <button
+              onClick={onReset}
+              title="Reset (R)"
+              aria-label="Reset simulation"
+              className="flex items-center justify-center w-9 h-9 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all"
+            >
+              <RotateCcw size={15} />
+            </button>
+            <button
+              onClick={onStepBackward}
+              disabled={isPlaying}
+              title="Step Back (←)"
+              aria-label="Step backward"
+              className="flex items-center justify-center w-9 h-9 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all disabled:opacity-30"
+            >
+              <SkipBack size={15} />
+            </button>
+
+            <button
+              onClick={isPlaying ? onStop : onRun}
+              title={isPlaying ? 'Pause (Space)' : 'Run (Space)'}
+              aria-label={isPlaying ? 'Pause simulation' : 'Run simulation'}
+              className={`flex items-center justify-center w-10 h-10 rounded-xl font-bold text-sm transition-all ${
+                isPlaying
+                  ? 'bg-slate-700 text-white hover:bg-slate-600'
+                  : 'bg-indigo-500 text-white hover:bg-indigo-400 shadow-glow-indigo'
+              }`}
+            >
+              {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-0.5" />}
+            </button>
+
+            <button
+              onClick={onStepForward}
+              disabled={isPlaying}
+              title="Step Forward (→)"
+              aria-label="Step forward"
+              className="flex items-center justify-center w-9 h-9 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all disabled:opacity-30"
+            >
+              <SkipForward size={15} />
+            </button>
+          </div>
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1 hidden md:block" />
+
+        {/* Mode Switch + Progress */}
+        <div className="hidden lg:flex items-center gap-4 shrink-0">
+          <div className="flex items-center bg-slate-800/60 p-1 rounded-xl border border-slate-700/50">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 rounded-lg text-[11px] font-bold text-white" aria-pressed="true">
+              <Presentation size={12} />
+              <span>Visualizer</span>
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white transition-colors text-[11px] font-bold rounded-lg" aria-pressed="false">
+              <Code2 size={12} />
+              <span>Problems</span>
+            </button>
+          </div>
+
+          <div className="h-8 w-px bg-slate-800" />
+
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">Mastery</span>
+              <span className="text-sm font-mono font-bold text-white">{overallProgress}%</span>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xs">
+              PM
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Toggle */}
+        <button onClick={onMenuToggle} className="md:hidden ml-auto p-2 text-slate-400 hover:text-white" aria-label="Toggle menu">
+          {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-slate-950/98 backdrop-blur-xl border-b border-slate-800 p-5 flex flex-col gap-5 max-h-[calc(100vh-64px)] overflow-y-auto z-40 animate-fade-in">
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Algorithm</span>
+            <AlgorithmDropdown label="Algorithm" />
+
+          </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Speed</span>
+            <SpeedSlider />
+          </div>
+          <div className="flex items-center justify-center gap-2 bg-slate-900 p-3 rounded-2xl border border-slate-800">
+            <button onClick={() => { onReset(); onMenuToggle(); }} className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all" aria-label="Reset">
+              <RotateCcw size={20} />
+            </button>
+            <button onClick={onStepBackward} disabled={isPlaying} className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30" aria-label="Step back">
+              <SkipBack size={20} />
+            </button>
+            <button onClick={isPlaying ? onStop : onRun} className={`px-8 py-3 rounded-xl font-bold transition-all ${isPlaying ? 'bg-slate-800 text-white' : 'bg-indigo-500 text-white shadow-glow-indigo'}`} aria-label={isPlaying ? 'Pause' : 'Run'}>
+              {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
+            </button>
+            <button onClick={onStepForward} disabled={isPlaying} className="p-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-30" aria-label="Step forward">
+              <SkipForward size={20} />
+            </button>
+          </div>
+          <div className="flex justify-between items-center bg-slate-900 px-4 py-3 rounded-xl border border-slate-800">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mastery</span>
+            <span className="text-lg font-mono font-bold text-indigo-400">{overallProgress}%</span>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

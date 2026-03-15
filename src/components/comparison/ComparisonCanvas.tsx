@@ -60,10 +60,13 @@ export const ComparisonCanvas: React.FC<Props> = ({ algorithms, array }) => {
     const arr = [...baseArr];
     for (let i = 0; i <= si && i < steps.length; i++) {
       const step = steps[i];
-      if (step.type === 'swap' && step.indices[0] !== undefined && step.indices[1] !== undefined) {
-        [arr[step.indices[0]], arr[step.indices[1]]] = [arr[step.indices[1]], arr[step.indices[0]]];
-      } else if (step.type === 'overwrite' && step.indices[0] !== undefined && step.value !== undefined) {
-        arr[step.indices[0]] = step.value;
+      const indices = step.indices || [];
+      if (step.type === 'swap' && indices[0] !== undefined && indices[1] !== undefined) {
+        if (arr[indices[0]] !== undefined && arr[indices[1]] !== undefined) {
+          [arr[indices[0]], arr[indices[1]]] = [arr[indices[1]], arr[indices[0]]];
+        }
+      } else if (step.type === 'overwrite' && indices[0] !== undefined && step.value !== undefined) {
+        if (arr[indices[0]] !== undefined) arr[indices[0]] = step.value;
       }
     }
     return arr;

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import { Sidebar } from '../components/layout/Sidebar';
-import { Footer } from '../components/layout/Footer';
 import { TABS, TabId } from './routes';
 
 import { useAlgorithmStore } from '../state/useAlgorithmStore';
@@ -22,7 +21,7 @@ import { TreeCanvas } from '../visualization/tree/TreeCanvas';
 import { DPTable } from '../visualization/dp/DPTable';
 
 // Components
-import { CurrentStepExplanation } from '../components/walkthrough/CurrentStepExplanation';
+import { WalkthroughPanel } from '../components/walkthrough/WalkthroughPanel';
 import { ComparisonCanvas } from '../components/comparison/ComparisonCanvas';
 import { CodeEditor } from '../components/editor/CodeEditor';
 import { InputEditor } from '../components/playground/InputEditor';
@@ -52,24 +51,24 @@ const SAMPLE_GRAPH = {
 
 const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
   <div className="flex items-center gap-2">
-    <div className={`w-3 h-3 rounded-full ${color} shadow-lg`} />
-    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
+    <div className={`w-2.5 h-2.5 rounded ${color}`} />
+    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{label}</span>
   </div>
 );
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabId>('visualizer');
+  const [activeTab, setActiveTab] = useState<TabId>('sorting');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [array, setArray] = useState<number[]>([]);
   const [target, setTarget] = useState<number | null>(null);
-  
+
   const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
   const { steps, currentStepIndex, reset: resetPlayback } = usePlaybackStore();
   const { runSelected, stop } = useAlgorithmRunner();
-  
+
   useAnimationDriver();
-  const { nextStep, prevStep } = useAnimationActions();
-  
+  const { nextStep, prevStep, pause, resume } = useAnimationActions();
+
   const { progress, overallProgress, recordQuizScore, markAlgorithmViewed } = useProgressTracker();
 
   const entry = useMemo(() => algorithmRegistry[selectedAlgorithmId], [selectedAlgorithmId]);
@@ -78,7 +77,7 @@ export default function App() {
   const { array: visualizedArray, explanation: arrayExplanation } = useAlgorithmVisualization(array, steps, currentStepIndex);
 
   const currentExplanation = useMemo(() => {
-    if (activeTab === 'visualizer') return arrayExplanation;
+    if (['sorting', 'searching', 'techniques'].includes(activeTab)) return arrayExplanation;
     return steps[currentStepIndex]?.explanation;
   }, [activeTab, arrayExplanation, steps, currentStepIndex]);
 
@@ -98,43 +97,39 @@ export default function App() {
   }, [handleNewArray]);
 
   useEffect(() => {
-    if (!entry) return;
-    const cat = entry.info.category.toLowerCase();
-    let targetTab: TabId = 'visualizer';
+    const cat = entry?.info.category.toLowerCase();
+    if (!cat) return;
     
-    if (cat === 'graph') targetTab = 'graph';
-    else if (cat === 'tree') targetTab = 'tree';
-    else if (cat === 'dp') targetTab = 'dp';
-    
-    const visualizerTabs: TabId[] = ['visualizer', 'graph', 'tree', 'dp'];
-    if (visualizerTabs.includes(activeTab) && activeTab !== targetTab) {
-        setActiveTab(targetTab);
+    const categoryToTabMap: Record<string, TabId> = {
+      'sorting': 'sorting',
+      'searching': 'searching',
+      'techniques': 'techniques',
+      'graph': 'graph',
+      'tree': 'tree',
+      'dp': 'dp'
+    };
+
+    const targetTab = categoryToTabMap[cat];
+    if (targetTab && activeTab !== targetTab && ['sorting', 'searching', 'techniques', 'graph', 'tree', 'dp'].includes(activeTab)) {
+      setActiveTab(targetTab);
     }
   }, [selectedAlgorithmId, entry, activeTab]);
 
   const handleTabChange = (newTab: TabId) => {
     setActiveTab(newTab);
-    
-    const tabToCategoryMap: Record<string, string> = {
-        'visualizer': 'sorting',
-        'graph': 'graph',
-        'tree': 'tree',
-        'dp': 'dp'
-    };
-    
-    const targetCategory = tabToCategoryMap[newTab];
-    if (targetCategory && entry?.info.category.toLowerCase() !== targetCategory) {
-        const firstInCat = Object.values(algorithmRegistry).find(a => a.info.category.toLowerCase() === targetCategory);
-        if (firstInCat) {
-            setSelectedAlgorithmId(firstInCat.id);
-        }
+    const algoCategories = ['sorting', 'searching', 'techniques', 'graph', 'tree', 'dp'];
+    if (algoCategories.includes(newTab)) {
+      useAlgorithmStore.getState().setSelectedCategory(newTab);
     }
   };
 
-  const handleRun = () => {
+  const { isPlaying: storeIsPlaying } = usePlaybackStore();
+  const isPlaying = storeIsPlaying;
+
+  const handleRun = useCallback(() => {
     if (!entry) return;
     markAlgorithmViewed(selectedAlgorithmId);
-    
+
     const cat = entry.info.category.toLowerCase();
     if (cat === 'graph') {
       runSelected(SAMPLE_GRAPH, 'A');
@@ -146,15 +141,38 @@ export default function App() {
     } else {
       runSelected(array, target);
     }
-  };
+  }, [entry, selectedAlgorithmId, markAlgorithmViewed, runSelected, array, target]);
 
-  const isVisualizationTab = ['visualizer', 'graph', 'tree', 'dp'].includes(activeTab);
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          isPlaying ? pause() : handleRun();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          nextStep();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          prevStep();
+          break;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPlaying, stop, handleRun, nextStep, prevStep]);
+
+  const isVisualizationTab = ['sorting', 'searching', 'techniques', 'graph', 'tree', 'dp'].includes(activeTab);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-indigo-500/30 overflow-hidden">
-      <Navbar 
-        overallProgress={overallProgress} 
-        onMenuToggle={() => setIsMenuOpen(!isMenuOpen)} 
+    <div className="h-screen w-full bg-slate-950 text-slate-200 flex flex-col font-sans overflow-hidden">
+      <Navbar
+        overallProgress={overallProgress}
+        onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
         isMenuOpen={isMenuOpen}
         selectedAlgorithmId={selectedAlgorithmId}
         onAlgorithmChange={setSelectedAlgorithmId}
@@ -163,112 +181,121 @@ export default function App() {
         onStepForward={nextStep}
         onStepBackward={prevStep}
         onReset={handleNewArray}
-        isPlaying={!!steps.length && currentStepIndex < steps.length - 1}
+        isPlaying={isPlaying}
       />
-      
-      <div className="flex-1 flex overflow-hidden">
-        {/* Far Left: Navigation Rail */}
+
+      {/* Main responsive layout */}
+      <div className="flex flex-1 flex-col md:flex-row overflow-hidden relative">
+        {/* Navigation Rail — vertical on md+, horizontal on mobile */}
         <NavRail activeTab={activeTab} onTabChange={handleTabChange} />
 
-        {/* Left Side: Educational Rail */}
-        <aside className="hidden lg:flex flex-col w-80 border-r border-slate-800 bg-slate-900 overflow-y-auto p-6 custom-scrollbar animate-slide-left">
-          <Sidebar 
-            algorithm={entry} 
-            problem={problem} 
-            currentStep={steps[currentStepIndex]} 
-          />
-        </aside>
+        <div className="flex-1 flex flex-col xl:flex-row overflow-hidden overflow-y-auto xl:overflow-hidden custom-scrollbar">
+          
+          {/* Theory Panel (Sidebar) — Visible on xl in first column, otherwise stacked */}
+          <aside className={`
+            w-full xl:w-[20%] xl:min-w-[260px] xl:max-w-[320px] 
+            border-b xl:border-b-0 xl:border-r border-slate-800/50 
+            bg-slate-950 p-5 shrink-0
+            ${activeTab === 'paths' || activeTab === 'quiz' ? 'hidden' : 'block'}
+            order-2 xl:order-1
+          `}>
+            <Sidebar
+              algorithm={entry}
+              problem={problem}
+              currentStep={steps[currentStepIndex]}
+            />
+          </aside>
 
-        {/* Center: Visualization Canvas */}
-        <main className="flex-1 bg-slate-950 relative overflow-hidden flex flex-col items-center justify-center p-8 animate-premium">
-          {isVisualizationTab ? (
-            <div className="max-w-6xl mx-auto w-full flex flex-col gap-10">
-              <section className="relative group">
-                <div className="bg-slate-900 shadow-premium rounded-[32px] p-8 lg:p-12 border border-slate-800/60 min-h-[600px] flex flex-col relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-                       style={{ backgroundImage: 'radial-gradient(#6366f1 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-                  
-                  <div className="absolute top-6 right-8 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500/50 bg-indigo-500/10 px-4 py-1.5 rounded-full border border-indigo-500/20 z-10 backdrop-blur-md">
-                     {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Simulation
+          {/* Center — Visualization — Always visible, primary focus */}
+          <main className="flex-1 min-h-[400px] md:min-h-0 bg-slate-950 relative flex flex-col order-1 xl:order-2" role="main">
+            {isVisualizationTab ? (
+              <div className="flex-1 flex flex-col p-3 md:p-5 min-h-0">
+                <div className="flex-1 flex flex-col min-h-0 bg-slate-900/50 rounded-2xl border border-slate-800/50 overflow-hidden relative">
+                  {/* Subtle grid */}
+                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                       style={{ backgroundImage: 'radial-gradient(rgba(148,163,184,0.4) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+
+                  {/* Header */}
+                  <div className="relative z-10 flex items-center justify-between px-5 py-3 border-b border-slate-800/50 shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <h2 className="text-sm font-semibold text-slate-200">
+                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Simulation
+                      </h2>
+                    </div>
+                    <button
+                      onClick={handleNewArray}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[11px] font-semibold transition-all active:scale-95 border border-slate-700/50"
+                    >
+                      <RotateCcw size={12} />
+                      <span>Regenerate</span>
+                    </button>
                   </div>
-                  
-                  <div className="flex-1 flex flex-col relative z-0 justify-center">
-                      {activeTab === 'visualizer' && <ArrayCanvas array={visualizedArray} maxValue={200} />}
-                      {activeTab === 'graph' && <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />}
-                      {activeTab === 'tree' && <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />}
-                      {activeTab === 'dp' && <DPTable steps={steps} currentStepIndex={currentStepIndex} />}
+
+                  {/* Visualization Body */}
+                  <div className="flex-1 flex flex-col relative z-0 min-h-0 overflow-hidden">
+                    {(activeTab === 'sorting' || activeTab === 'searching' || activeTab === 'techniques') && 
+                      <ArrayCanvas array={visualizedArray} maxValue={200} />}
+                    {activeTab === 'graph' && <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />}
+                    {activeTab === 'tree' && <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />}
+                    {activeTab === 'dp' && <DPTable steps={steps} currentStepIndex={currentStepIndex} />}
                   </div>
-                  
-                  <div className="mt-8 pt-6 border-t border-slate-800/50 flex flex-wrap gap-6 justify-center">
-                    <LegendItem color="bg-indigo-500" label="Default" />
-                    <LegendItem color="bg-yellow-400" label="Comparison" />
-                    <LegendItem color="bg-rose-500" label="Modification / Swap" />
-                    <LegendItem color="bg-emerald-500" label="Sorted / Result" />
-                    <LegendItem color="bg-blue-400" label="Pointers" />
+
+                  {/* Legend Footer */}
+                  <div className="relative z-10 px-5 py-2.5 border-t border-slate-800/50 shrink-0 flex flex-wrap items-center justify-center gap-5">
+                    <LegendItem color="bg-slate-600" label="Default" />
+                    <LegendItem color="bg-amber-400" label="Comparing" />
+                    <LegendItem color="bg-red-400" label="Swap" />
+                    <LegendItem color="bg-emerald-400" label="Sorted" />
+                    <LegendItem color="bg-blue-400" label="Pointer" />
                   </div>
                 </div>
-
-                <button 
-                  onClick={handleNewArray} 
-                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 group flex items-center gap-3 px-8 py-4 bg-slate-850 hover:bg-slate-800 rounded-2xl border border-slate-700 text-sm font-black transition-all shadow-2xl active:scale-95 whitespace-nowrap z-20"
-                >
-                   <RotateCcw size={18} className="text-indigo-400 group-hover:rotate-[-180deg] transition-transform duration-500" />
-                   <span>Regenerate Dataset</span>
-                </button>
-              </section>
-
-              {problem && (
-                <div className="mt-8">
-                  <ProblemPanel problem={problem} />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="h-full">
-              {activeTab === 'compare' && <ComparisonCanvas array={array} algorithms={[]} />}
-              {activeTab === 'code' && <CodeEditor onGenerateSteps={() => {}} />}
-              {activeTab === 'playground' && <InputEditor onApply={() => {}} />}
-              {activeTab === 'quiz' && (
-                <div className="max-w-2xl mx-auto w-full py-8">
-                  <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />
-                </div>
-              )}
-              {activeTab === 'paths' && (
-                <div className="flex flex-col gap-8">
-                   <div className="bg-slate-850 rounded-3xl p-8 border border-slate-700/50 flex items-center justify-between shadow-premium">
-                     <div>
-                       <h2 className="text-4xl font-black mb-2">{overallProgress}% Path Complete</h2>
-                       <p className="text-slate-400">Keep going! You're mastering the fundamental algorithms.</p>
-                     </div>
-                     <div className="w-32 h-32 rounded-full border-8 border-slate-800 flex items-center justify-center relative">
-                        <span className="text-2xl font-black">{overallProgress}%</span>
+              </div>
+            ) : (
+              <div className="h-full overflow-y-auto custom-scrollbar">
+                {activeTab === 'quiz' && (
+                  <div className="max-w-2xl mx-auto w-full py-8 px-4">
+                    <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />
+                  </div>
+                )}
+                {activeTab === 'paths' && (
+                  <div className="flex flex-col gap-6 p-6">
+                    <div className="surface-card p-6 flex items-center justify-between">
+                      <div>
+                        <h2 className="text-3xl font-bold mb-1">{overallProgress}% Complete</h2>
+                        <p className="text-slate-400 text-sm">Keep going! You're mastering the algorithms.</p>
+                      </div>
+                      <div className="w-24 h-24 rounded-full border-4 border-slate-800 flex items-center justify-center relative">
+                        <span className="text-xl font-bold">{overallProgress}%</span>
                         <svg className="absolute inset-0 w-full h-full -rotate-90">
-                          <circle cx="64" cy="64" r="56" fill="transparent" stroke="#6366f1" strokeWidth="8" strokeDasharray="351.85" strokeDashoffset={351.85 * (1 - overallProgress/100)} strokeLinecap="round" />
+                          <circle cx="48" cy="48" r="42" fill="transparent" stroke="#6366f1" strokeWidth="4" strokeDasharray="263.89" strokeDashoffset={263.89 * (1 - overallProgress/100)} strokeLinecap="round" />
                         </svg>
-                     </div>
-                   </div>
-                    <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id: string) => { setSelectedAlgorithmId(id); setActiveTab('visualizer'); }} />
-                </div>
-              )}
-            </div>
-          )}
-        </main>
+                      </div>
+                    </div>
+                    <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id: string) => { setSelectedAlgorithmId(id); }} />
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
 
-        <aside className="hidden xl:flex flex-col w-96 border-l border-slate-800 bg-slate-900 p-6 overflow-y-auto custom-scrollbar">
-          {isVisualizationTab && (
-            <div className="flex flex-col h-full">
-              <div className="mb-8 font-black">
-                <span className="text-[10px] text-slate-500 uppercase tracking-[0.3em]">Simulation Logic</span>
-                <h3 className="text-xl mt-2">Walkthrough</h3>
-              </div>
-              <div className="flex-1">
-                 <CurrentStepExplanation explanation={currentExplanation} />
-              </div>
-            </div>
-          )}
-        </aside>
+          {/* Walkthrough Panel — Visible on xl in third column, otherwise stacked below */}
+          <aside className={`
+            w-full xl:w-[25%] xl:min-w-[300px] xl:max-w-[380px] 
+            border-t xl:border-t-0 xl:border-l border-slate-800/50 
+            bg-slate-950 p-5 shrink-0
+            ${!isVisualizationTab ? 'hidden' : 'block'}
+            order-3
+          `}>
+            <WalkthroughPanel
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              currentExplanation={currentExplanation}
+              problem={problem}
+            />
+          </aside>
+        </div>
       </div>
-      <Footer />
     </div>
   );
 }
