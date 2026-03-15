@@ -47,7 +47,7 @@ export const ArrayBar: React.FC<ArrayBarProps> = React.memo(({ value, maxValue, 
         <div className="absolute inset-y-0 left-0 w-[1px] bg-white/15" />
 
         {/* Value Label */}
-        <span className={`absolute -top-5 md:-top-6 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] font-bold transition-colors ${state !== 'default' ? 'text-white' : 'text-slate-500'}`}>
+        <span className={`absolute -top-5 md:-top-6 left-1/2 -translate-x-1/2 text-[8px] sm:text-[10px] font-bold transition-colors hidden sm:inline-block ${state !== 'default' ? 'text-white' : 'text-slate-500'}`}>
           {value}
         </span>
       </div>

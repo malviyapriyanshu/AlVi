@@ -21,7 +21,7 @@ export const NavRail: React.FC<NavRailProps> = ({ activeTab, onTabChange }) => {
 
   return (
     <nav
-      className="flex flex-row md:flex-col w-full md:w-16 bg-white dark:bg-slate-950 items-center overflow-x-auto md:overflow-visible no-scrollbar py-2 md:py-6 gap-2 md:gap-4 z-40 md:h-full shrink-0 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-800/50 px-4 md:px-0"
+      className="flex flex-row md:flex-col w-full md:w-16 bg-white dark:bg-slate-950 items-center overflow-x-auto md:overflow-visible no-scrollbar py-1 md:py-6 gap-1 md:gap-4 z-40 md:h-full shrink-0 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-800/50 px-4 md:px-0"
       role="tablist"
       aria-label="Navigation"
     >

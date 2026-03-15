@@ -50,9 +50,9 @@ const SAMPLE_GRAPH = {
 };
 
 const LegendItem: React.FC<{ color: string; label: string }> = ({ color, label }) => (
-  <div className="flex items-center gap-2">
-    <div className={`w-2.5 h-2.5 rounded ${color}`} />
-    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{label}</span>
+  <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+    <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded ${color}`} />
+    <span className="text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</span>
   </div>
 );
 
@@ -224,7 +224,7 @@ export default function App() {
           </aside>
 
           {/* Center → Visualization — Primary Focus */}
-          <main className="flex-[3] min-h-[400px] md:min-h-[500px] xl:min-h-0 bg-gray-50 dark:bg-slate-950 relative flex flex-col order-1 xl:order-2 xl:h-full overflow-hidden" role="main">
+          <main className="flex-[3] min-h-[480px] md:min-h-[500px] xl:min-h-0 bg-gray-50 dark:bg-slate-950 relative flex flex-col order-1 xl:order-2 xl:h-full overflow-hidden" role="main">
             {isVisualizationTab ? (
               <div className="flex-1 flex flex-col p-2 md:p-4 xl:p-6 min-h-0">
                 <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-slate-800/50 overflow-hidden relative shadow-sm dark:shadow-none">
@@ -278,7 +278,7 @@ export default function App() {
                   </div>
 
                   {/* Legend Footer */}
-                  <div className="relative z-10 px-4 md:px-6 py-2.5 md:py-3 border-t border-gray-200 dark:border-slate-800/50 shrink-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 md:gap-8 bg-gray-50/50 dark:bg-slate-900/30">
+                  <div className="relative z-10 px-4 md:px-6 py-2 md:py-3 border-t border-gray-100 dark:border-slate-800/50 shrink-0 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 md:gap-8 bg-gray-50/50 dark:bg-slate-900/30">
                     <LegendItem color="bg-slate-400 dark:bg-slate-600" label="Default" />
                     <LegendItem color="bg-amber-400" label="Comparing" />
                     <LegendItem color="bg-red-500" label="Swap" />
