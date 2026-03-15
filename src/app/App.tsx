@@ -11,6 +11,8 @@ import { useProgressTracker } from '../hooks/useProgressTracker';
 
 import { algorithmCategories, algorithmRegistry } from '../data/algorithmMetadata';
 import { leetcodeProblems } from '../data/leetcodeProblems';
+import { useAlgorithmVisualization } from '../hooks/useAlgorithmVisualization';
+import { useAnimationEngineCore } from '../core/animation/animationEngine';
 import { quizQuestions, learningPaths } from '../data/quizAndPaths';
 
 // Visualizations
@@ -57,19 +59,16 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [array, setArray] = useState<number[]>([]);
   const [target, setTarget] = useState<number | null>(null);
-
-  const { selectedAlgorithmId, setAlgorithmRegistry } = useAlgorithmStore();
-  const { isPlaying, reset: resetPlayback } = usePlaybackStore();
+  const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
+  const { steps, currentStepIndex, reset: resetPlayback } = usePlaybackStore();
   const { runSelected, stop } = useAlgorithmRunner();
+  const { nextStep, prevStep } = useAnimationEngineCore();
   const { progress, overallProgress, recordQuizScore, markAlgorithmViewed } = useProgressTracker();
 
   const entry = useMemo(() => algorithmRegistry[selectedAlgorithmId], [selectedAlgorithmId]);
   const problem = useMemo(() => leetcodeProblems.find(p => p.algorithmId === selectedAlgorithmId), [selectedAlgorithmId]);
 
-  useEffect(() => {
-    setAlgorithmRegistry(algorithmRegistry);
-    handleNewArray();
-  }, []);
+  const { array: visualizedArray, explanation } = useAlgorithmVisualization(array, steps, currentStepIndex);
 
   const handleNewArray = useCallback(() => {
     const newArr = generateRandomArray(20, 10, 200);
@@ -81,6 +80,10 @@ export default function App() {
     }
     resetPlayback();
   }, [resetPlayback, selectedAlgorithmId]);
+
+  useEffect(() => {
+    handleNewArray();
+  }, [handleNewArray]);
 
   const handleRun = () => {
     if (!entry) return;
@@ -107,19 +110,24 @@ export default function App() {
               </div>
 
               <ArrayCanvas 
-                array={array.map((v, i) => ({ 
-                  value: v, state: 'default' as any, pointers: [] 
-                }))} 
+                array={visualizedArray} 
                 maxValue={200} 
               />
 
-              <ControlPanel 
-                onPlay={handleRun}
-                onStop={stop}
-                onStepForward={() => {}} 
-                onStepBackward={() => {}}
-                onRestart={handleNewArray}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1">
+                  <ControlPanel 
+                    onPlay={handleRun}
+                    onStop={stop}
+                    onStepForward={nextStep} 
+                    onStepBackward={prevStep}
+                    onRestart={handleNewArray}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <CurrentStepExplanation explanation={explanation} />
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 flex flex-col gap-6">
@@ -186,7 +194,7 @@ export default function App() {
                     </svg>
                  </div>
                </div>
-               <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id) => { setActiveTab('visualizer'); }} />
+               <LearningPathPanel paths={learningPaths} viewedAlgorithms={progress.viewedAlgorithms} onSelectAlgorithm={(id) => { setSelectedAlgorithmId(id); setActiveTab('visualizer'); }} />
             </div>
           )}
         </main>

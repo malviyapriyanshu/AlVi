@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { AlgorithmEntry } from '../types/algorithmTypes';
+import { algorithmRegistry as registryData } from '../data/algorithmMetadata';
 
 interface AlgorithmState {
   selectedAlgorithmId: string;
@@ -11,6 +12,6 @@ interface AlgorithmState {
 export const useAlgorithmStore = create<AlgorithmState>((set) => ({
   selectedAlgorithmId: 'bubble',
   setSelectedAlgorithmId: (id) => set({ selectedAlgorithmId: id }),
-  algorithmRegistry: {},
+  algorithmRegistry: registryData,
   setAlgorithmRegistry: (registry) => set({ algorithmRegistry: registry }),
 }));

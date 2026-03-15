@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   BarChart3, GitBranch, TreePine, Layers, BarChart2, Code2, Wand2, Trophy, Map 
 } from 'lucide-react';

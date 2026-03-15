@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, SkipForward, SkipBack, RotateCcw } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, RotateCcw, X } from 'lucide-react';
 import { usePlaybackStore } from '../../state/usePlaybackStore';
 
 interface ControlPanelProps {
@@ -93,4 +93,3 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   );
 };
 
-import { X } from 'lucide-react';

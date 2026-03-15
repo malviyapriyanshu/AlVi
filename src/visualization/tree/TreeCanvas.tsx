@@ -29,7 +29,7 @@ export const TreeCanvas: React.FC<TreeCanvasProps> = ({ root, currentStep }) => 
   return (
     <div className="bg-slate-900 rounded-2xl border border-slate-700/50 overflow-hidden" style={{ height: 300 }}>
       <svg width="100%" height="100%" viewBox="0 0 600 280">
-        {positions.map((node, idx) => (
+        {positions.map((node) => (
           <TreeComponent 
             key={node.id}
             x={node.x} y={node.y}

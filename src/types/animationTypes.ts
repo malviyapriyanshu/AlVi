@@ -41,6 +41,7 @@ export interface AnimationStep {
   distances?: Record<string, number>;
   shortestPath?: string[];
   // For DP
+  table?: any[];
   cells?: any[][];
   highlightCells?: { i: number; j: number }[];
 }

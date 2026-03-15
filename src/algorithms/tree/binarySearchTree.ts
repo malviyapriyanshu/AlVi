@@ -1,5 +1,3 @@
-import { AnimationStep } from '../../types/animationTypes';
-
 export interface TreeNode {
   val: number;
   left?: TreeNode | null;

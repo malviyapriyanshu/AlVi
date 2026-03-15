@@ -2,7 +2,7 @@ import React from 'react';
 import { usePlaybackStore } from '../../state/usePlaybackStore';
 
 export const SpeedSlider: React.FC = () => {
-  const { speed, setSpeed, isPlaying } = usePlaybackStore();
+  const { speed, setSpeed } = usePlaybackStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSpeed(parseInt(e.target.value, 10));
