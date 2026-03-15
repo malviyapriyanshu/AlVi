@@ -85,11 +85,40 @@ export default function App() {
     handleNewArray();
   }, [handleNewArray]);
 
+  // Sync tab with algorithm selection
+  useEffect(() => {
+    if (!entry) return;
+    const cat = entry.info.category.toLowerCase();
+    if (cat === 'sorting' || cat === 'searching' || cat === 'technique') {
+      setActiveTab('visualizer');
+    } else if (cat === 'graph') {
+      setActiveTab('graph');
+    } else if (cat === 'tree') {
+      setActiveTab('tree');
+    } else if (cat === 'dp') {
+      setActiveTab('dp');
+    }
+  }, [selectedAlgorithmId, entry]);
+
   const handleRun = () => {
     if (!entry) return;
     markAlgorithmViewed(selectedAlgorithmId);
-    runSelected(array, target);
+    
+    // Choose correct data based on category
+    const cat = entry.info.category.toLowerCase();
+    if (cat === 'graph') {
+      runSelected(SAMPLE_GRAPH, 'A');
+    } else if (cat === 'dp') {
+      if (selectedAlgorithmId === 'fib') runSelected(10);
+      else runSelected([1, 2, 5], 11); // Coin change defaults
+    } else if (cat === 'tree') {
+      runSelected(buildSampleBST());
+    } else {
+      runSelected(array, target);
+    }
   };
+
+  const isVisualizationTab = ['visualizer', 'graph', 'tree', 'dp'].includes(activeTab);
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-50 flex flex-col font-sans selection:bg-indigo-500/30">
@@ -99,21 +128,44 @@ export default function App() {
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} tabs={TABS as any} />
         
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {activeTab === 'visualizer' && (
+          {isVisualizationTab && (
             <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col lg:flex-row gap-6 items-start">
-                <AlgorithmDropdown label="Algorithm" categories={algorithmCategories} />
+                <AlgorithmDropdown 
+                  label="Algorithm" 
+                  categories={algorithmCategories} 
+                />
                 <SpeedSlider />
-                <button onClick={handleNewArray} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-sm font-bold transition-all">
-                  New Array
+                <button onClick={handleNewArray} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-sm font-bold transition-all whitespace-nowrap">
+                   New Data
                 </button>
               </div>
 
-              <ArrayCanvas 
-                array={visualizedArray} 
-                maxValue={200} 
-              />
+              {/* Canvas Area */}
+              <div className="bg-slate-900 shadow-2xl rounded-3xl p-6 border border-slate-700/50 min-h-[400px] flex flex-col relative overflow-hidden">
+                <div className="absolute top-4 right-6 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50 z-10">
+                   Active Canvas: {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </div>
+                
+                {activeTab === 'visualizer' && (
+                  <ArrayCanvas array={visualizedArray} maxValue={200} />
+                )}
+                {activeTab === 'graph' && (
+                   <div className="h-full flex flex-col justify-center">
+                     <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />
+                   </div>
+                )}
+                {activeTab === 'tree' && (
+                  <div className="h-full flex flex-col justify-center">
+                    <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />
+                  </div>
+                )}
+                {activeTab === 'dp' && (
+                  <DPTable steps={steps} currentStepIndex={currentStepIndex} />
+                )}
+              </div>
 
+              {/* Playback & Step Info */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-1">
                   <ControlPanel 
@@ -129,6 +181,7 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Educational Content */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 flex flex-col gap-6">
                   {entry && <AlgorithmOverviewCard info={entry.info} leetcodeLink={problem?.link} />}
@@ -144,27 +197,6 @@ export default function App() {
                   {problem && <ProblemPanel problem={problem} />}
                 </div>
               </div>
-            </div>
-          )}
-
-          {activeTab === 'graph' && (
-             <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-               <h2 className="text-3xl font-black">Graph Algorithms</h2>
-               <GraphCanvas graph={SAMPLE_GRAPH} />
-             </div>
-          )}
-
-          {activeTab === 'tree' && (
-            <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-              <h2 className="text-3xl font-black">Tree Traversals</h2>
-              <TreeCanvas root={buildSampleBST()} />
-            </div>
-          )}
-
-          {activeTab === 'dp' && (
-            <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-               <h2 className="text-3xl font-black">Dynamic Programming</h2>
-               <DPTable steps={[]} currentStepIndex={0} />
             </div>
           )}
 
