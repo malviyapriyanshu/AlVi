@@ -9,25 +9,44 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #020617;
-  color: #e2e8f0;
+  @apply bg-gray-50 text-slate-900 transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-200;
 }
 
 @layer components {
   .surface-card {
-    @apply bg-slate-900 border border-slate-800 rounded-2xl;
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm transition-all;
+  }
+
+  .dark .surface-card {
+    @apply bg-slate-900 border-slate-800 rounded-xl shadow-none;
   }
 
   .surface-panel {
+    @apply bg-white border-r border-gray-200;
+  }
+
+  .dark .surface-panel {
     @apply bg-slate-950 border-r border-slate-800/50;
   }
 
   .btn-primary {
-    @apply bg-indigo-500 hover:bg-indigo-400 text-white font-semibold rounded-xl px-4 py-2 transition-all duration-200 active:scale-95;
+    @apply bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl px-4 py-2 transition-all duration-200 active:scale-95 shadow-sm;
+  }
+
+  .dark .btn-primary {
+    @apply bg-indigo-500 hover:bg-indigo-400 shadow-glow-indigo;
   }
 
   .btn-ghost {
-    @apply text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl px-3 py-2 transition-all duration-200;
+    @apply text-slate-500 hover:text-slate-900 hover:bg-gray-100 rounded-xl px-3 py-2 transition-all duration-200;
+  }
+
+  .dark .btn-ghost {
+    @apply text-slate-400 hover:text-white hover:bg-slate-800;
   }
 
   .text-code {

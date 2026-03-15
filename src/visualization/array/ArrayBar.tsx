@@ -12,15 +12,15 @@ export const ArrayBar: React.FC<ArrayBarProps> = React.memo(({ value, maxValue, 
   const barHeight = Math.max((value / maxValue) * 100, 5);
 
   const colors: Record<string, string> = {
-    default: 'bg-gradient-to-t from-slate-700 to-slate-500 border-slate-500/50',
-    compare: 'bg-gradient-to-t from-amber-600 to-amber-400 border-amber-400/50 shadow-glow-amber z-10 scale-[1.03]',
-    comparing: 'bg-gradient-to-t from-amber-600 to-amber-400 border-amber-400/50 shadow-glow-amber z-10 scale-[1.03]',
-    swap: 'bg-gradient-to-t from-red-600 to-red-400 border-red-400/50 shadow-glow-red z-20 scale-[1.06]',
-    found: 'bg-gradient-to-t from-emerald-600 to-emerald-400 border-emerald-400/50 shadow-glow-emerald animate-pulse z-20',
-    found_result: 'bg-gradient-to-t from-emerald-600 to-emerald-400 border-emerald-400/50 shadow-glow-emerald animate-pulse z-20',
-    sorted: 'bg-gradient-to-t from-emerald-700 to-emerald-500 border-emerald-500/50',
-    discarded: 'bg-slate-800 border-slate-700/30 opacity-25 grayscale scale-95',
-    overwrite: 'bg-gradient-to-t from-blue-600 to-blue-400 border-blue-400/50 shadow-glow-indigo z-20',
+    default: 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-500/50 hover:bg-slate-300 dark:hover:bg-slate-600',
+    compare: 'bg-amber-400 dark:bg-amber-500 border-amber-300 dark:border-amber-400/50 shadow-glow-amber z-10 scale-[1.03] text-white',
+    comparing: 'bg-amber-400 dark:bg-amber-500 border-amber-300 dark:border-amber-400/50 shadow-glow-amber z-10 scale-[1.03] text-white',
+    swap: 'bg-red-500 dark:bg-red-500 border-red-400 dark:border-red-400/50 shadow-glow-red z-20 scale-[1.06] text-white',
+    found: 'bg-emerald-500 dark:bg-emerald-500 border-emerald-400 dark:border-emerald-400/50 shadow-glow-emerald animate-pulse z-20 text-white',
+    found_result: 'bg-emerald-500 dark:bg-emerald-500 border-emerald-400 dark:border-emerald-400/50 shadow-glow-emerald animate-pulse z-20 text-white',
+    sorted: 'bg-emerald-400 dark:bg-emerald-600 border-emerald-300 dark:border-emerald-500/50 text-white',
+    discarded: 'bg-slate-100 dark:bg-slate-800 border-transparent dark:border-slate-700/30 opacity-30 grayscale scale-95',
+    overwrite: 'bg-indigo-500 dark:bg-blue-500 border-indigo-400 dark:border-blue-400/50 shadow-glow-indigo z-20 text-white',
   };
 
   const hasPointer = pointers.length > 0;
