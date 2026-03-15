@@ -12,6 +12,7 @@ import { dfs, dfsInfo } from '../algorithms/graph/dfs';
 import { dijkstra, dijkstraInfo } from '../algorithms/graph/dijkstra';
 import { fibonacciDP, fibonacciInfo } from '../algorithms/dp/fibonacciDP';
 import { coinChange, coinChangeInfo } from '../algorithms/dp/coinChange';
+import { inorderTraversal, inorderInfo } from '../algorithms/tree/traversals';
 
 export const algorithmRegistry: Record<string, AlgorithmEntry> = {
   bubble: { id: 'bubble', info: bubbleSortInfo, run: bubbleSort },
@@ -27,6 +28,7 @@ export const algorithmRegistry: Record<string, AlgorithmEntry> = {
   dijkstra: { id: 'dijkstra', info: dijkstraInfo, run: (g, start) => dijkstra(g, start) },
   fib: { id: 'fib', info: fibonacciInfo, run: (n) => fibonacciDP(n) },
   coin: { id: 'coin', info: coinChangeInfo, run: (coins, amt) => coinChange(coins, amt) },
+  inorder: { id: 'inorder', info: inorderInfo, run: (root) => inorderTraversal(root) },
 };
 
 export const algorithmCategories = [
@@ -61,6 +63,12 @@ export const algorithmCategories = [
     options: [
       { id: 'fib', name: 'Fibonacci' },
       { id: 'coin', name: 'Coin Change' },
+    ],
+  },
+  {
+    title: 'Tree Traversals',
+    options: [
+      { id: 'inorder', name: 'Inorder Traversal' },
     ],
   },
 ];

@@ -2,19 +2,21 @@ import { useRef, useCallback, useEffect } from 'react';
 import { usePlaybackStore } from '../../state/usePlaybackStore';
 import { AnimationStep } from '../../types/animationTypes';
 
-export const useAnimationEngineCore = () => {
+/**
+ * useAnimationActions provides functions to control the playback store.
+ * It does NOT contain any side-effects like timers.
+ */
+export const useAnimationActions = () => {
   const { 
-    isPlaying, isPaused, speed, currentStepIndex, totalSteps,
+    currentStepIndex, totalSteps,
     setIsPlaying, setIsPaused, setCurrentStepIndex, setTotalSteps, setSteps 
   } = usePlaybackStore();
 
-  const timerRef = useRef<number | null>(null);
-
   const stop = useCallback(() => {
-    if (timerRef.current) window.clearInterval(timerRef.current);
     setIsPlaying(false);
     setIsPaused(false);
-  }, [setIsPlaying, setIsPaused]);
+    setCurrentStepIndex(0);
+  }, [setIsPlaying, setIsPaused, setCurrentStepIndex]);
 
   const play = useCallback((steps: AnimationStep[]) => {
     setSteps(steps);
@@ -35,18 +37,41 @@ export const useAnimationEngineCore = () => {
     setCurrentStepIndex(Math.max(currentStepIndex - 1, 0));
   }, [currentStepIndex, setCurrentStepIndex]);
 
+  return { play, stop, pause, resume, nextStep, prevStep };
+};
+
+/**
+ * useAnimationDriver contains the timer logic that drives the animation.
+ * It should ONLY be used once in the application (e.g., in App.tsx) 
+ * to avoid multiple intervals competing for state updates.
+ */
+export const useAnimationDriver = () => {
+  const { 
+    isPlaying, isPaused, speed, currentStepIndex, totalSteps,
+    setCurrentStepIndex, setIsPlaying 
+  } = usePlaybackStore();
+
+  const timerRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (isPlaying && !isPaused && currentStepIndex < totalSteps - 1) {
       timerRef.current = window.setInterval(() => {
+        // Increment step
         setCurrentStepIndex(currentStepIndex + 1);
       }, speed);
-    } else if (currentStepIndex >= totalSteps - 1) {
+    } else if (currentStepIndex >= totalSteps - 1 && isPlaying) {
       setIsPlaying(false);
     }
+
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
   }, [isPlaying, isPaused, currentStepIndex, totalSteps, speed, setCurrentStepIndex, setIsPlaying]);
+};
 
-  return { play, stop, pause, resume, nextStep, prevStep };
+// Keep deprecated name for compatibility temporarily if needed, but we should refactor
+export const useAnimationEngineCore = () => {
+    const actions = useAnimationActions();
+    useAnimationDriver();
+    return actions;
 };

@@ -12,7 +12,7 @@ import { useProgressTracker } from '../hooks/useProgressTracker';
 import { algorithmCategories, algorithmRegistry } from '../data/algorithmMetadata';
 import { leetcodeProblems } from '../data/leetcodeProblems';
 import { useAlgorithmVisualization } from '../hooks/useAlgorithmVisualization';
-import { useAnimationEngineCore } from '../core/animation/animationEngine';
+import { useAnimationActions, useAnimationDriver } from '../core/animation/animationEngine';
 import { quizQuestions, learningPaths } from '../data/quizAndPaths';
 
 // Visualizations
@@ -59,16 +59,27 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [array, setArray] = useState<number[]>([]);
   const [target, setTarget] = useState<number | null>(null);
+  
   const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
   const { steps, currentStepIndex, reset: resetPlayback } = usePlaybackStore();
   const { runSelected, stop } = useAlgorithmRunner();
-  const { nextStep, prevStep } = useAnimationEngineCore();
+  
+  // Single instance of the driver to avoid competition between hooks
+  useAnimationDriver();
+  const { nextStep, prevStep } = useAnimationActions();
+  
   const { progress, overallProgress, recordQuizScore, markAlgorithmViewed } = useProgressTracker();
 
   const entry = useMemo(() => algorithmRegistry[selectedAlgorithmId], [selectedAlgorithmId]);
   const problem = useMemo(() => leetcodeProblems.find(p => p.algorithmId === selectedAlgorithmId), [selectedAlgorithmId]);
 
-  const { array: visualizedArray, explanation } = useAlgorithmVisualization(array, steps, currentStepIndex);
+  const { array: visualizedArray, explanation: arrayExplanation } = useAlgorithmVisualization(array, steps, currentStepIndex);
+
+  // Sync explanations across different algorithm types
+  const currentExplanation = useMemo(() => {
+    if (activeTab === 'visualizer') return arrayExplanation;
+    return steps[currentStepIndex]?.explanation;
+  }, [activeTab, arrayExplanation, steps, currentStepIndex]);
 
   const handleNewArray = useCallback(() => {
     const newArr = generateRandomArray(20, 10, 200);
@@ -85,32 +96,59 @@ export default function App() {
     handleNewArray();
   }, [handleNewArray]);
 
-  // Sync tab with algorithm selection
+  /**
+   * Coordination Logic: 
+   * Ensure the selected algorithm matches the active tab's context.
+   */
+  
+  // 1. When algorithm changes, ensure we are on the right tab
   useEffect(() => {
     if (!entry) return;
     const cat = entry.info.category.toLowerCase();
-    if (cat === 'sorting' || cat === 'searching' || cat === 'technique') {
-      setActiveTab('visualizer');
-    } else if (cat === 'graph') {
-      setActiveTab('graph');
-    } else if (cat === 'tree') {
-      setActiveTab('tree');
-    } else if (cat === 'dp') {
-      setActiveTab('dp');
+    let targetTab: TabId = 'visualizer';
+    
+    if (cat === 'graph') targetTab = 'graph';
+    else if (cat === 'tree') targetTab = 'tree';
+    else if (cat === 'dp') targetTab = 'dp';
+    
+    // Only switch if the user is currently in a visualizer mode
+    const visualizerTabs: TabId[] = ['visualizer', 'graph', 'tree', 'dp'];
+    if (visualizerTabs.includes(activeTab) && activeTab !== targetTab) {
+        setActiveTab(targetTab);
     }
   }, [selectedAlgorithmId, entry]);
+
+  // 2. When user manually switches tab via sidebar, pick a default algorithm for that tab
+  const handleTabChange = (newTab: TabId) => {
+    setActiveTab(newTab);
+    
+    const tabToCategoryMap: Record<string, string> = {
+        'visualizer': 'sorting',
+        'graph': 'graph',
+        'tree': 'tree',
+        'dp': 'dp'
+    };
+    
+    const targetCategory = tabToCategoryMap[newTab];
+    if (targetCategory && entry?.info.category.toLowerCase() !== targetCategory) {
+        // Find first algorithm in the registry that matches this category
+        const firstInCat = Object.values(algorithmRegistry).find(a => a.info.category.toLowerCase() === targetCategory);
+        if (firstInCat) {
+            setSelectedAlgorithmId(firstInCat.id);
+        }
+    }
+  };
 
   const handleRun = () => {
     if (!entry) return;
     markAlgorithmViewed(selectedAlgorithmId);
     
-    // Choose correct data based on category
     const cat = entry.info.category.toLowerCase();
     if (cat === 'graph') {
       runSelected(SAMPLE_GRAPH, 'A');
     } else if (cat === 'dp') {
       if (selectedAlgorithmId === 'fib') runSelected(10);
-      else runSelected([1, 2, 5], 11); // Coin change defaults
+      else runSelected([1, 2, 5], 11);
     } else if (cat === 'tree') {
       runSelected(buildSampleBST());
     } else {
@@ -125,7 +163,7 @@ export default function App() {
       <Navbar overallProgress={overallProgress} onMenuToggle={() => setIsMenuOpen(!isMenuOpen)} isMenuOpen={isMenuOpen} />
       
       <div className="flex-1 flex max-w-7xl w-full mx-auto overflow-hidden">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} tabs={TABS as any} />
+        <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} tabs={TABS as any} />
         
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {isVisualizationTab && (
@@ -142,27 +180,25 @@ export default function App() {
               </div>
 
               {/* Canvas Area */}
-              <div className="bg-slate-900 shadow-2xl rounded-3xl p-6 border border-slate-700/50 min-h-[400px] flex flex-col relative overflow-hidden">
-                <div className="absolute top-4 right-6 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50 z-10">
-                   Active Canvas: {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              <div className="bg-slate-900 shadow-2xl rounded-3xl p-6 border border-slate-700/50 min-h-[440px] flex flex-col relative overflow-hidden">
+                <div className="absolute top-4 right-6 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50 z-10 transition-all">
+                   {activeTab === 'visualizer' ? 'Array' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Visualizer
                 </div>
                 
-                {activeTab === 'visualizer' && (
-                  <ArrayCanvas array={visualizedArray} maxValue={200} />
-                )}
-                {activeTab === 'graph' && (
-                   <div className="h-full flex flex-col justify-center">
-                     <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />
-                   </div>
-                )}
-                {activeTab === 'tree' && (
-                  <div className="h-full flex flex-col justify-center">
-                    <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />
-                  </div>
-                )}
-                {activeTab === 'dp' && (
-                  <DPTable steps={steps} currentStepIndex={currentStepIndex} />
-                )}
+                <div className="flex-1 flex flex-col">
+                    {activeTab === 'visualizer' && (
+                      <ArrayCanvas array={visualizedArray} maxValue={200} />
+                    )}
+                    {activeTab === 'graph' && (
+                       <GraphCanvas graph={SAMPLE_GRAPH} currentStep={steps[currentStepIndex]} />
+                    )}
+                    {activeTab === 'tree' && (
+                        <TreeCanvas root={buildSampleBST()} currentStep={steps[currentStepIndex]} />
+                    )}
+                    {activeTab === 'dp' && (
+                      <DPTable steps={steps} currentStepIndex={currentStepIndex} />
+                    )}
+                </div>
               </div>
 
               {/* Playback & Step Info */}
@@ -177,7 +213,7 @@ export default function App() {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <CurrentStepExplanation explanation={explanation} />
+                  <CurrentStepExplanation explanation={currentExplanation} />
                 </div>
               </div>
 
@@ -201,11 +237,8 @@ export default function App() {
           )}
 
           {activeTab === 'compare' && <ComparisonCanvas array={array} algorithms={[]} />}
-          
           {activeTab === 'code' && <CodeEditor onGenerateSteps={() => {}} />}
-          
           {activeTab === 'playground' && <InputEditor onApply={() => {}} />}
-          
           {activeTab === 'quiz' && (
             <div className="max-w-2xl mx-auto w-full py-8">
               <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />

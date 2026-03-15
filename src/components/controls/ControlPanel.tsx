@@ -79,7 +79,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <div className="text-right hidden sm:block">
           <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Progress</div>
           <div className="text-sm font-mono text-white">
-            {currentStepIndex + 1} / {totalSteps || 0}
+            {totalSteps > 0 ? currentStepIndex + 1 : 0} / {totalSteps}
           </div>
         </div>
         <div className="w-24 bg-slate-700 rounded-full h-1.5 overflow-hidden">

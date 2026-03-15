@@ -21,16 +21,31 @@ export const coinChange = (coins: number[], amount: number): AnimationStep[] => 
   const dp = new Array(amount + 1).fill(Infinity);
   dp[0] = 0;
 
-  steps.push({ type: 'table_init', table: [0], explanation: `Initialize dp table. dp[0]=0` });
+  steps.push({ 
+    type: 'table_init', 
+    table: [...dp], 
+    explanation: `Initialize dp table. dp[0]=0, others set to ∞` 
+  });
 
   for (let i = 1; i <= amount; i++) {
     for (const coin of coins) {
       if (i >= coin) {
-        steps.push({ type: 'table_access', indices: [i - coin], explanation: `Trying coin ${coin} for amount ${i}` });
+        steps.push({ 
+            type: 'table_access', 
+            indices: [i - coin, i], 
+            table: [...dp],
+            explanation: `Checking if using coin ${coin} improves current solution for amount ${i}` 
+        });
         const res = dp[i - coin] + 1;
         if (res < dp[i]) {
           dp[i] = res;
-          steps.push({ type: 'table_update', indices: [i], value: dp[i], explanation: `Found better way to make ${i}: ${dp[i]} coins` });
+          steps.push({ 
+            type: 'table_update', 
+            indices: [i], 
+            table: [...dp],
+            value: dp[i], 
+            explanation: `Amount ${i}: Found better solution using coin ${coin}. New min coins: ${dp[i]}` 
+          });
         }
       }
     }
