@@ -29,9 +29,22 @@ export interface AlgorithmComplexity {
   space: string;
 }
 
+export interface Step {
+  title: string;
+  description: string;
+}
+
 export interface AlgorithmInfo {
   name: string;
   complexity: AlgorithmComplexity;
   description: string;
   pseudocode: string;
+  problemContext: {
+    title: string;
+    link: string;
+  };
+  intuition: string;
+  analogy: string;
+  stepByStep: Step[];
+  whenToUse: string;
 }
