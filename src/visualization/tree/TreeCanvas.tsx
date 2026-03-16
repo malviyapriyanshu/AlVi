@@ -41,10 +41,10 @@ export const TreeCanvas: React.FC<TreeCanvasProps> = ({ root, currentStep }) => 
   };
 
   return (
-    <div className="flex-1 w-full flex items-center justify-center p-8 overflow-hidden min-h-[500px] relative transition-all duration-1000">
-      <div className="absolute top-6 left-8 flex flex-col gap-2">
-         <LegendItem color="bg-indigo-500" label="Active Instruction" />
-         <LegendItem color="bg-emerald-500" label="Visited Memory" />
+    <div className="flex-1 w-full flex items-center justify-center p-4 sm:p-8 overflow-hidden min-h-[300px] sm:min-h-[500px] relative transition-all duration-1000">
+      <div className="absolute top-4 sm:top-6 left-4 sm:left-8 flex sm:flex-col gap-3 sm:gap-2 bg-background-primary/40 backdrop-blur-sm p-2 rounded-xl sm:bg-transparent sm:p-0">
+         <LegendItem color="bg-indigo-500" label="Cursor" />
+         <LegendItem color="bg-emerald-500" label="Memory" />
       </div>
 
       <svg width="100%" height="100%" viewBox="0 0 600 500" className="max-w-full max-h-full">

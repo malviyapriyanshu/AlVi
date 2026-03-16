@@ -25,6 +25,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const { resolvedTheme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [insightOpen, setInsightOpen] = useState(false);
 
   return (
     <div className="h-screen w-full bg-background-primary flex overflow-hidden font-sans">
@@ -62,21 +63,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         {/* Main Header */}
         <header className="h-16 flex items-center justify-between px-4 md:px-8 border-b border-border shrink-0 bg-background-primary/80 backdrop-blur-md z-40">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 overflow-hidden">
             <button 
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
-              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+              className="md:hidden w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             >
               <Menu size={20} />
             </button>
             
-            <div className="hidden md:block w-64">
+            <div className="w-full max-w-[180px] xs:max-w-64">
                <AlgorithmDropdown label="Algorithm" />
             </div>
             
             <button 
-              className="px-3 py-2 bg-background-secondary border border-border rounded-xl flex items-center gap-2 text-text-secondary hover:text-text-primary transition-all group md:hidden outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+              className="w-10 h-10 shrink-0 flex items-center justify-center bg-background-secondary border border-border rounded-xl text-text-secondary hover:text-text-primary transition-all group lg:hidden outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               aria-label="Search algorithms"
             >
@@ -101,12 +102,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               <button
                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
                aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
-               className="w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+               className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
              >
                {resolvedTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
              </button>
+
+             {insightPanel && (
+                <button
+                  onClick={() => setInsightOpen(!insightOpen)}
+                  aria-label="Toggle algorithm insights"
+                  className={cn(
+                    "w-10 h-10 xl:hidden flex-shrink-0 flex items-center justify-center rounded-xl border transition-all outline-none focus-visible:ring-2 focus-visible:ring-accent-ring",
+                    insightOpen ? "bg-accent-primary border-accent-primary text-white" : "bg-background-secondary border-border text-text-secondary"
+                  )}
+                >
+                  <Search size={18} className={cn("transition-transform duration-300", insightOpen && "rotate-90")} />
+                </button>
+              )}
             
-            <div className="hidden sm:flex w-px h-6 bg-border mx-2" />
+            <div className="hidden sm:flex w-px h-6 bg-border mx-1" />
             
             <div className="flex items-center gap-3">
                 <div className="text-right hidden lg:block leading-none">
@@ -128,7 +142,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
              </div>
           </main>
 
-          {/* Right Insight Panel */}
+          {/* Right Insight Panel - Desktop */}
           {insightPanel && (
             <motion.aside
               initial={{ x: 300, opacity: 0 }}
@@ -140,6 +154,41 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </div>
             </motion.aside>
           )}
+
+          {/* Mobile/Tablet Insight Drawer */}
+          <AnimatePresence>
+              {insightOpen && insightPanel && (
+                <>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setInsightOpen(false)}
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 xl:hidden"
+                  />
+                  <motion.aside
+                    initial={{ x: '100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '100%' }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                    className="fixed inset-y-0 right-0 w-full max-w-sm bg-background-primary z-[51] border-l border-border flex flex-col shadow-2xl xl:hidden"
+                  >
+                    <div className="h-16 flex items-center justify-between px-6 border-b border-border shrink-0">
+                       <span className="text-sm font-black uppercase tracking-widest text-text-primary">Algorithm Insights</span>
+                       <button 
+                         onClick={() => setInsightOpen(false)}
+                         className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-text-secondary"
+                       >
+                          <X size={18} />
+                       </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                      {insightPanel}
+                    </div>
+                  </motion.aside>
+                </>
+              )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ interface Props {
 
 export const ArrayCanvas: React.FC<Props> = ({ array, maxValue }) => {
   return (
-    <div className="flex-1 w-full bg-background-secondary rounded-[32px] border border-border p-6 sm:p-10 flex items-end justify-center min-h-[400px] relative overflow-hidden group/canvas shadow-inner">
+    <div className="flex-1 w-full bg-background-secondary rounded-[32px] border border-border p-3 sm:p-6 md:p-10 flex items-end justify-center min-h-[350px] sm:min-h-[400px] relative overflow-hidden group/canvas shadow-inner">
       {/* Background Grid */}
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none" 
            style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
@@ -21,7 +21,7 @@ export const ArrayCanvas: React.FC<Props> = ({ array, maxValue }) => {
 
       <motion.div 
         layout
-        className="flex-1 h-full flex items-end gap-[2px] sm:gap-[4px] max-w-[1200px] mx-auto w-full"
+        className="flex-1 h-full flex items-end gap-[1px] sm:gap-[4px] max-w-[1200px] mx-auto w-full"
       >
         {array.map((item, idx) => (
           <ArrayBar 

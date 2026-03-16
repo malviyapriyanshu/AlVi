@@ -207,7 +207,7 @@ export const ComparisonCanvas: React.FC<Props> = ({ algorithms, array }) => {
       </div>
 
       {/* Race Lanes */}
-      <div className="flex-1 grid gap-6" style={{ gridTemplateColumns: `repeat(${algorithms.length}, 1fr)` }}>
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
          {algorithms.map((algo, i) => {
            const si = stepIndices[i];
            const curArr = getArrayAtStep(allSteps[i], si, array);

@@ -36,7 +36,7 @@ export const ArrayBar: React.FC<Props> = ({ value, max, state, index, showLabel 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-              "absolute -top-10 text-[10px] sm:text-xs font-mono font-black select-none pointer-events-none transition-colors duration-300",
+              "absolute -top-7 sm:-top-10 text-[8px] sm:text-xs font-mono font-black select-none pointer-events-none transition-colors duration-300",
               colors.text
             )}
           >
@@ -46,26 +46,26 @@ export const ArrayBar: React.FC<Props> = ({ value, max, state, index, showLabel 
       </AnimatePresence>
 
       {/* Bar */}
-      <div className="w-full flex-1 flex flex-col justify-end min-h-0 pt-12 pb-2">
+      <div className="w-full flex-1 flex flex-col justify-end min-h-0 pt-8 sm:pt-12 pb-1 sm:pb-2">
         <motion.div
           layout
           initial={{ height: 0 }}
           animate={{ height: `${Math.max(heightPercent, 4)}%` }}
           transition={{ type: 'spring', damping: 15, stiffness: 100 }}
           className={cn(
-            "w-[85%] mx-auto rounded-t-xl transition-all duration-300 relative overflow-hidden flex flex-col items-center pt-2",
+            "w-[90%] sm:w-[85%] mx-auto rounded-t-lg sm:rounded-t-xl transition-all duration-300 relative overflow-hidden flex flex-col items-center pt-1 sm:pt-2",
             colors.bar,
             state !== 'default' && colors.glow
           )}
           aria-label={`Value ${value}, state ${state}`}
         >
           {/* Visual Indicator for color-blind users */}
-          <div className="flex flex-col items-center gap-1 opacity-60">
-             {state === 'sorted' && <span className="text-[10px] font-black text-white">✓</span>}
-             {state === 'swap' && <span className="text-[10px] font-black text-white">⇄</span>}
-             {state === 'comparing' && <span className="text-[10px] font-black text-white">?</span>}
-             {state === 'pivot' && <span className="text-[10px] font-black text-white">★</span>}
-             {state === 'discarded' && <span className="text-[10px] font-black text-white/40">✕</span>}
+          <div className="flex flex-col items-center gap-0.5 sm:gap-1 opacity-60">
+             {state === 'sorted' && <span className="text-[8px] sm:text-[10px] font-black text-white">✓</span>}
+             {state === 'swap' && <span className="text-[8px] sm:text-[10px] font-black text-white">⇄</span>}
+             {state === 'comparing' && <span className="text-[8px] sm:text-[10px] font-black text-white">?</span>}
+             {state === 'pivot' && <span className="text-[8px] sm:text-[10px] font-black text-white">★</span>}
+             {state === 'discarded' && <span className="text-[8px] sm:text-[10px] font-black text-white/40">✕</span>}
           </div>
 
           {/* Shine effect for active states */}

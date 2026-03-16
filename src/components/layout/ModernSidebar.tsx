@@ -106,8 +106,8 @@ export const ModernSidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-border mt-auto">
+      {/* Footer - Desktop Only */}
+      <div className="p-4 border-t border-border mt-auto hidden md:block">
          <button
            onClick={() => setIsCollapsed(!isCollapsed)}
            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
