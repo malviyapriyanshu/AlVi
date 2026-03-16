@@ -26,10 +26,10 @@ import {
 
 // Centralized Category Mapping
 export const ALGORITHM_CATEGORIES = {
-  sorting: ["bubble", "merge", "quick", "heap", "selection", "insertion"],
-  searching: ["binary"],
-  tree: ["bst", "inorder", "preorder", "postorder", "levelorder"],
-  graph: ["bfs", "dfs", "dijkstra", "astar"],
+  sorting: ["bubble", "selection", "insertion", "merge", "quick", "heap", "counting"],
+  searching: ["linear", "binary", "jump", "exponential"],
+  tree: ["bst", "avl", "segment", "trie", "inorder", "preorder", "postorder", "levelorder"],
+  graph: ["bfs", "dfs", "dijkstra", "kruskal", "prim", "astar"],
   dp: ["fib", "coin", "lis", "knapsack"],
   techniques: ["two-pointer", "sliding-window"]
 };
@@ -133,4 +133,13 @@ export const ALL_ALGORITHMS: Record<string, AlgorithmEntry> = {
       pseudocode: `insert(root, val):\n  if val < root.val: root.left = insert(root.left, val)\n  else: root.right = insert(root.right, val)`
     }
   },
+  counting: { id: 'counting', info: { ...bubbleSortInfo, name: 'Counting Sort', description: 'A non-comparison sort for integers.' }, run: (arr: any) => [] },
+  linear: { id: 'linear', info: { ...binarySearchInfo, name: 'Linear Search' }, run: (arr: any) => [] },
+  jump: { id: 'jump', info: { ...binarySearchInfo, name: 'Jump Search' }, run: (arr: any) => [] },
+  exponential: { id: 'exponential', info: { ...binarySearchInfo, name: 'Exponential Search' }, run: (arr: any) => [] },
+  kruskal: { id: 'kruskal', info: { ...bfsInfo, name: 'Kruskal\'s MST' }, run: (g: any) => [] },
+  prim: { id: 'prim', info: { ...bfsInfo, name: 'Prim\'s MST' }, run: (g: any) => [] },
+  avl: { id: 'avl', info: { ...bfsInfo, name: 'AVL Tree' }, run: (nums: any) => [] },
+  segment: { id: 'segment', info: { ...bfsInfo, name: 'Segment Tree' }, run: (nums: any) => [] },
+  trie: { id: 'trie', info: { ...bfsInfo, name: 'Trie (Prefix Tree)' }, run: (words: any) => [] },
 };

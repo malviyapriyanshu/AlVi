@@ -7,8 +7,10 @@ import {
   SkipBack, 
   SkipForward, 
   RefreshCw,
-  Gauge
+  Gauge,
+  ArrowRightLeft
 } from 'lucide-react';
+import { InputEditor } from '../controls/InputEditor';
 import { cn } from '../../utils/cn';
 import { usePlaybackStore } from '../../state/usePlaybackStore';
 
@@ -24,6 +26,8 @@ interface FloatingControlsProps {
   canStepForward: boolean;
   canStepBackward: boolean;
   progress: number;
+  array: number[];
+  onUpdateData: (newArray: number[]) => void;
 }
 
 export const FloatingControls: React.FC<FloatingControlsProps> = ({
@@ -37,28 +41,36 @@ export const FloatingControls: React.FC<FloatingControlsProps> = ({
   isPaused,
   canStepForward,
   canStepBackward,
-  progress
+  progress,
+  array,
+  onUpdateData
 }) => {
   const { speed, setSpeed } = usePlaybackStore();
   const [showSpeed, setShowSpeed] = useState(false);
 
   return (
-    <div className="fixed bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-40 w-max max-w-[95vw]">
+    <div className="fixed bottom-6 md:bottom-10 left-0 right-0 px-4 md:px-0 flex justify-center z-40">
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-background-primary/80 backdrop-blur-2xl border border-border px-3 sm:px-4 py-2 sm:py-3 rounded-[2.5rem] shadow-premium flex items-center gap-1 sm:gap-2"
+        className="bg-background-primary/80 backdrop-blur-2xl border border-border px-3 md:px-4 py-2 md:py-3 rounded-[2rem] md:rounded-[2.5rem] shadow-premium flex items-center gap-1 md:gap-2 max-w-full overflow-hidden"
       >
-        {/* Reset / Randomize Section */}
-        <div className="flex items-center gap-1 sm:gap-1.5 pr-1.5 sm:pr-2 border-r border-border/50">
-          <ControlButton icon={<RotateCcw size={16} className="sm:w-[18px] sm:h-[18px]" />} onClick={onReset} tooltip="Reset Sequence" />
-          <ControlButton icon={<RefreshCw size={16} className="sm:w-[18px] sm:h-[18px]" />} onClick={onRandomize} tooltip="Randomize Data" />
+        {/* Data Input Section */}
+        <div className="flex items-center gap-1.5 pr-2 md:pr-3 border-r border-border/50">
+           <InputEditor initialValue={array} onUpdate={onUpdateData} />
+           <ControlButton icon={<RefreshCw size={16} className="md:w-[18px]" />} onClick={onRandomize} tooltip="Randomize Data" />
+        </div>
+
+        {/* Reset Section */}
+        <div className="flex items-center gap-1 pr-1 md:pr-1 border-r border-border/50 px-1">
+          <ControlButton icon={<RotateCcw size={16} className="md:w-[18px]" />} onClick={onReset} tooltip="Reset Sequence" />
         </div>
 
         {/* Playback Section */}
-        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4">
+        <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-4">
           <ControlButton 
-            icon={<SkipBack size={16} className="sm:w-[18px] sm:h-[18px]" />} 
+            icon={<SkipBack size={16} className="md:w-[18px]" />} 
+
             onClick={onStepBackward} 
             disabled={!canStepBackward} 
             tooltip="Previous Step" 
@@ -67,23 +79,22 @@ export const FloatingControls: React.FC<FloatingControlsProps> = ({
           {!isPlaying || isPaused ? (
             <button
               onClick={onPlay}
-              aria-label="Start simulation"
-              className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-accent-primary text-white flex items-center justify-center shadow-glow-indigo transition-transform active:scale-90 hover:scale-105 outline-none focus-visible:ring-4 focus-visible:ring-accent-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background-primary"
+              className="w-11 h-11 md:w-14 md:h-14 rounded-full bg-accent-primary text-white flex items-center justify-center shadow-glow-indigo transition-transform active:scale-90 hover:scale-105 shrink-0"
             >
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5 sm:ml-1" fill="currentColor" />
+              <Play size={20} className="md:w-[24px] ml-1" fill="currentColor" />
             </button>
           ) : (
             <button
               onClick={onPause}
-              aria-label="Pause simulation"
-              className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-accent-primary text-white flex items-center justify-center shadow-glow-indigo transition-transform active:scale-90 hover:scale-105 outline-none focus-visible:ring-4 focus-visible:ring-accent-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background-primary"
+              className="w-11 h-11 md:w-14 md:h-14 rounded-full bg-accent-primary text-white flex items-center justify-center shadow-glow-indigo transition-transform active:scale-90 hover:scale-105 shrink-0"
             >
-              <Pause className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" />
+              <Pause size={20} className="md:w-[24px]" fill="currentColor" />
             </button>
           )}
 
           <ControlButton 
-            icon={<SkipForward size={16} className="sm:w-[18px] sm:h-[18px]" />} 
+            icon={<SkipForward size={16} className="md:w-[18px]" />} 
+
             onClick={onStepForward} 
             disabled={!canStepForward} 
             tooltip="Next Step" 
@@ -91,18 +102,20 @@ export const FloatingControls: React.FC<FloatingControlsProps> = ({
         </div>
 
         {/* Speed & Progress Section */}
-        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-border/50">
+        <div className="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-border/50">
+
            <div className="relative">
               <button 
                 onClick={() => setShowSpeed(!showSpeed)}
                 aria-label="Simulation speed"
                 aria-expanded={showSpeed}
                 className={cn(
-                  "w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center rounded-xl sm:rounded-2xl bg-background-secondary border border-border transition-all transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent-ring",
+                  "w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-2xl bg-background-secondary border border-border transition-all transition-colors",
                   showSpeed ? "text-accent-primary border-accent-primary" : "text-text-secondary hover:text-text-primary"
                 )}
               >
-                  <Gauge size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  <Gauge size={16} className="md:w-[18px]" />
+
               </button>
               <AnimatePresence>
                 {showSpeed && (
@@ -129,15 +142,16 @@ export const FloatingControls: React.FC<FloatingControlsProps> = ({
               </AnimatePresence>
            </div>
 
-          <div className="relative w-9 h-9 sm:w-10 sm:h-10 shrink-0">
+          <div className="relative w-9 h-9 md:w-10 md:h-10 shrink-0">
              <svg className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="16" fill="transparent" stroke="currentColor" strokeWidth="2.5" className="text-slate-100 dark:text-slate-800 sm:hidden" />
-                <circle cx="20" cy="20" r="18" fill="transparent" stroke="currentColor" strokeWidth="3" className="text-slate-100 dark:text-slate-800 hidden sm:block" />
+                <circle cx="18" cy="18" r="16" fill="transparent" stroke="currentColor" strokeWidth="2" className="text-slate-100 dark:text-slate-800 md:hidden" />
+                <circle cx="20" cy="20" r="18" fill="transparent" stroke="currentColor" strokeWidth="3" className="text-slate-100 dark:text-slate-800 hidden md:block" />
                 
                 <motion.circle 
                   cx="18" cy="18" r="16" 
-                  fill="transparent" stroke="currentColor" strokeWidth="2.5" 
-                  className="text-accent-primary sm:hidden"
+                  fill="transparent" stroke="currentColor" strokeWidth="2" 
+                  className="text-accent-primary md:hidden"
+
                   strokeDasharray="100.5"
                   animate={{ strokeDashoffset: 100.5 * (1 - progress / 100) }}
                   transition={{ type: 'spring', damping: 20, stiffness: 100 }}
@@ -146,16 +160,18 @@ export const FloatingControls: React.FC<FloatingControlsProps> = ({
                 <motion.circle 
                   cx="20" cy="20" r="18" 
                   fill="transparent" stroke="currentColor" strokeWidth="3" 
-                  className="text-accent-primary hidden sm:block"
+                  className="text-accent-primary hidden md:block"
+
                   strokeDasharray="113.1"
                   animate={{ strokeDashoffset: 113.1 * (1 - progress / 100) }}
                   transition={{ type: 'spring', damping: 20, stiffness: 100 }}
                   strokeLinecap="round"
                 />
              </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-[9px] sm:text-[11px] font-black text-text-primary" aria-hidden="true">
-                 {progress}%
-              </div>
+             <div className="absolute inset-0 flex items-center justify-center text-[7px] md:text-[8px] font-black text-text-primary uppercase">
+                {progress}%
+             </div>
+
           </div>
         </div>
       </motion.div>

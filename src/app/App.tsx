@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,7 +29,7 @@ import { ArrayCanvas } from '../visualization/array/ArrayCanvas';
 import { GraphCanvas } from '../visualization/graph/GraphCanvas';
 import { TreeCanvas } from '../visualization/tree/TreeCanvas';
 import { DPTable } from '../visualization/dp/DPTable';
-import { ComparisonCanvas } from '../components/comparison/ComparisonCanvas';
+import { ComparisonCanvas } from '../visualization/comparison/ComparisonCanvas';
 
 // Algorithms for Race
 import { bubbleSort } from '../algorithms/sorting/bubbleSort';
@@ -61,6 +61,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('sorting');
   const [array, setArray] = useState<number[]>([]);
   const [target, setTarget] = useState<number | null>(null);
+  const lastSelectedRef = useRef<string | null>(null);
 
   const { selectedAlgorithmId, setSelectedAlgorithmId } = useAlgorithmStore();
   const { steps, currentStepIndex, reset: resetPlayback, isPlaying, isPaused } = usePlaybackStore();
@@ -96,10 +97,11 @@ export default function App() {
 
   useEffect(() => {
     const cat = entry?.info.category.toLowerCase() as TabId;
-    if (cat && activeTab !== cat && ['sorting','searching','techniques','graph','tree','dp'].includes(activeTab)) {
+    if (cat && activeTab !== cat) {
       setActiveTab(cat);
     }
   }, [selectedAlgorithmId, entry, activeTab]);
+
 
   const handleTabChange = (newTab: TabId) => {
     setActiveTab(newTab);
@@ -118,8 +120,19 @@ export default function App() {
     else runSelected(array, target);
   }, [entry, selectedAlgorithmId, markAlgorithmViewed, runSelected, array, target]);
 
-  const progress = Math.round((currentStepIndex / Math.max(steps.length - 1, 1)) * 100);
   const isVizTab = ['sorting','searching','techniques','graph','tree','dp'].includes(activeTab);
+
+  useEffect(() => {
+    if (selectedAlgorithmId !== lastSelectedRef.current && isVizTab) {
+      lastSelectedRef.current = selectedAlgorithmId;
+      const timer = setTimeout(() => {
+        handleRun();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedAlgorithmId, isVizTab, handleRun]);
+
+  const progress = Math.round((currentStepIndex / Math.max(steps.length - 1, 1)) * 100);
 
   if (showLanding) {
     return <LandingPage onLaunch={() => setShowLanding(false)} />;
@@ -133,6 +146,7 @@ export default function App() {
         <InsightPanel
           info={entry.info}
           currentStep={steps[currentStepIndex]}
+          currentStepIndex={currentStepIndex}
           explanation={currentExplanation}
           progress={progress}
         />
@@ -249,6 +263,8 @@ export default function App() {
             canStepForward={currentStepIndex < steps.length - 1}
             canStepBackward={currentStepIndex > 0}
             progress={progress}
+            array={array}
+            onUpdateData={setArray}
           />
         )}
       </div>

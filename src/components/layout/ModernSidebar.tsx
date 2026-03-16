@@ -39,8 +39,10 @@ export const ModernSidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isCollapsed ? 80 : 260 }}
-      className="h-full bg-background-primary flex flex-col relative z-20"
+      animate={{ 
+        width: isCollapsed ? 80 : 'clamp(260px, 35vw, 320px)' 
+      }}
+      className="h-full bg-background-primary flex flex-col relative z-20 overflow-hidden"
     >
       {/* Header */}
       <div className="h-16 flex items-center px-6 mb-4 border-b border-border/50">
