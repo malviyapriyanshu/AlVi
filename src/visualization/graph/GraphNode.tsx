@@ -1,76 +1,89 @@
 import React from 'react';
-import { useThemeStore } from '../../state/useThemeStore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../../utils/cn';
 
 interface GraphNodeProps {
   x: number;
   y: number;
   label: string;
   color: string;
-  isActive?: boolean;
+  isActive: boolean;
+  isVisited?: boolean;
 }
 
-export const GraphNode: React.FC<GraphNodeProps> = ({ x, y, label, color, isActive }) => {
-  const { theme } = useThemeStore();
-  
-  // Dynamic gradient ID per color/state if needed, but we can reuse common ones
-  const gradientId = `grad-${color.replace('#', '')}`;
-  const isDefault = color === '#334155' || color === '#e2e8f0';
-  const labelColor = isDefault && theme === 'light' ? '#64748b' : '#ffffff';
-
+export const GraphNode: React.FC<GraphNodeProps> = ({ x, y, label, color, isActive, isVisited }) => {
   return (
-    <g className="transition-all duration-700 select-none cursor-default group">
-      <defs>
-        <radialGradient id={gradientId}>
-          <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.8} />
-        </radialGradient>
-      </defs>
+    <motion.g
+      layout
+      initial={false}
+      animate={{ x, y }}
+      transition={{ type: 'spring', damping: 20, stiffness: 150 }}
+      className="cursor-pointer"
+    >
+      {/* Glow Effect for Active/Visited */}
+      <AnimatePresence>
+        {(isActive || isVisited) && (
+          <motion.circle
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1.8, opacity: 0.2 }}
+            exit={{ scale: 0, opacity: 0 }}
+            r={24}
+            fill={color}
+            className="filter blur-md"
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Ripple effect for active nodes */}
-      {isActive && (
-        <circle 
-          cx={x} cy={y} r={32} 
-          fill={color} 
-          className="opacity-10 animate-ping" 
-        />
-      )}
-      
-      {/* Node Glow / Shadow */}
-      <circle 
-        cx={x} cy={y} r={24} 
-        fill="black" 
-        className="opacity-10 group-hover:opacity-20 transition-opacity" 
-        transform="translate(2, 3)" 
+      {/* Outer Ring */}
+      <motion.circle
+        r={22}
+        fill="transparent"
+        stroke={color}
+        strokeWidth={isActive ? 4 : 2}
+        animate={{ 
+          strokeWidth: isActive ? 6 : 2,
+          opacity: isActive ? 1 : 0.3 
+        }}
+        className="transition-all duration-500"
       />
 
       {/* Main Node Circle */}
-      <circle 
-        cx={x} cy={y} r={24} 
-        fill={`url(#${gradientId})`}
-        stroke={theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.03)'} 
-        strokeWidth={isActive ? 3 : 1}
-        className={`transition-all duration-500 transform ${isActive ? 'scale-110 drop-shadow-xl' : 'scale-100'}`} 
-      />
-
-      {/* Inner Highlight (Glossy effect) */}
-      <circle 
-        cx={x - 6} cy={y - 6} r={8} 
-        fill="white" 
-        className="opacity-10 pointer-events-none" 
+      <motion.circle
+        r={20}
+        fill={color}
+        animate={{ 
+          scale: isActive ? 1.15 : 1,
+          boxShadow: isActive ? '0 0 20px 0px rgba(99,102,241,0.5)' : 'none'
+        }}
+        stroke="#ffffff"
+        strokeWidth={2}
+        strokeOpacity={0.1}
+        className="transition-all duration-300 shadow-premium"
       />
 
       {/* Label */}
-      <text 
-        x={x} y={y} 
-        textAnchor="middle" 
-        dominantBaseline="middle" 
-        fontSize="13" 
-        fontWeight="800" 
-        fill={labelColor}
-        className="font-sans tracking-tight pointer-events-none drop-shadow-sm transition-colors duration-500"
+      <motion.text
+        textAnchor="middle"
+        dy=".3em"
+        fill="#ffffff"
+        className="text-[10px] font-black pointer-events-none uppercase tracking-tighter"
+        initial={false}
+        animate={{ scale: isActive ? 1.2 : 1 }}
       >
         {label}
-      </text>
-    </g>
+      </motion.text>
+
+      {/* Pulse Animation for Active */}
+      {isActive && (
+        <motion.circle
+          r={20}
+          stroke={color}
+          strokeWidth={2}
+          initial={{ scale: 1, opacity: 1 }}
+          animate={{ scale: 1.8, opacity: 0 }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: 'easeOut' }}
+        />
+      )}
+    </motion.g>
   );
 };

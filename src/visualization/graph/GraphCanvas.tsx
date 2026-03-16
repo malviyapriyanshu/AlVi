@@ -2,8 +2,7 @@ import React from 'react';
 import { GraphNode } from './GraphNode';
 import { GraphEdge } from './GraphEdge';
 import { Graph, GraphAnimationStep } from '../../types/extended';
-
-import { useThemeStore } from '../../state/useThemeStore';
+import { useTheme } from '../../theme/themeProvider';
 
 interface GraphCanvasProps {
   graph: Graph;
@@ -11,7 +10,8 @@ interface GraphCanvasProps {
 }
 
 export const GraphCanvas: React.FC<GraphCanvasProps> = ({ graph, currentStep }) => {
-  const { theme } = useThemeStore();
+  const { resolvedTheme } = useTheme();
+  
   const visited = currentStep?.visitedNodes ?? [];
   const queueStack = currentStep?.queueOrStack ?? [];
   const activeNode = currentStep?.nodeId;
@@ -20,15 +20,11 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ graph, currentStep }) 
   const shortestPath = currentStep?.shortestPath ?? [];
 
   const getNodeColor = (nodeId: string) => {
-    // Standard Colors based on requirements:
-    // Sorted/Result -> Success (Emerald)
-    // Active/Pointer -> Info (Blue/Indigo)
-    // Processing -> Warning (Yellow/Amber)
     if (shortestPath.includes(nodeId)) return '#10b981'; // Emerald-500
     if (activeNode === nodeId) return '#6366f1';        // Indigo-500
     if (visited.includes(nodeId)) return '#059669';       // Emerald-600
     if (queueStack.includes(nodeId)) return '#f59e0b';    // Amber-500
-    return theme === 'dark' ? '#334155' : '#e2e8f0';     // Slate-700 or Slate-200
+    return resolvedTheme === 'dark' ? '#334155' : '#e2e8f0'; 
   };
 
   const isEdgeActive = (from: string, to: string) => {
@@ -43,21 +39,20 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ graph, currentStep }) 
   };
 
   return (
-    <div className="flex-1 w-full bg-transparent p-4 md:p-8 flex items-center justify-center overflow-hidden relative">
-      <svg width="100%" height="100%" viewBox="0 0 600 400" className="drop-shadow-xl md:drop-shadow-2xl max-w-full max-h-full">
-        <defs>
-           <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-           </filter>
-        </defs>
+    <div className="flex-1 w-full bg-transparent p-4 md:p-8 flex items-center justify-center overflow-hidden relative min-h-[500px]">
+      <div className="absolute top-6 left-8 flex flex-col gap-2">
+         <LegendItem color="bg-indigo-500" label="Active Cursor" />
+         <LegendItem color="bg-emerald-500" label="Visited Set" />
+         <LegendItem color="bg-amber-500" label="Fringe / Queue" />
+      </div>
 
+      <svg width="100%" height="100%" viewBox="0 0 600 400" className="max-w-full max-h-full">
         {graph.edges.map((edge, i) => {
           const from = graph.nodes.find(n => n.id === edge.from);
           const to = graph.nodes.find(n => n.id === edge.to);
           if (!from || !to) return null;
           
-          let edgeColor = theme === 'dark' ? '#1e293b' : '#cbd5e1'; // Default
+          let edgeColor = resolvedTheme === 'dark' ? '#1e293b' : '#cbd5e1'; 
           if (isEdgeInShortestPath(edge.from, edge.to)) edgeColor = '#10b981';
           else if (isEdgeActive(edge.from, edge.to)) edgeColor = '#6366f1';
 
@@ -78,9 +73,17 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ graph, currentStep }) 
             label={node.label}
             color={getNodeColor(node.id)}
             isActive={activeNode === node.id}
+            isVisited={visited.includes(node.id)}
           />
         ))}
       </svg>
     </div>
   );
 };
+
+const LegendItem = ({ color, label }: { color: string, label: string }) => (
+  <div className="flex items-center gap-2">
+    <div className={`w-2 h-2 rounded-full ${color}`} />
+    <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest">{label}</span>
+  </div>
+);

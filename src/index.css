@@ -1,135 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Base ─────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --background-primary: #f8fafc;
+  --background-secondary: #ffffff;
+  --panel-background: rgba(255, 255, 255, 0.8);
+  --card-background: rgba(241, 245, 249, 0.6);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-primary: #4f46e5;
+  --accent-glow: rgba(79, 70, 229, 0.1);
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+}
 
-html { font-size: 16px; scroll-behavior: smooth; }
+.dark {
+  --background-primary: #020617;
+  --background-secondary: #0f172a;
+  --panel-background: rgba(15, 23, 42, 0.8);
+  --card-background: rgba(30, 41, 59, 0.4);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-primary: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;   /* slate-50 */
-  color: #0f172a;               /* slate-900 */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-.dark body {
-  background-color: #020617;   /* slate-950 */
-  color: #e2e8f0;               /* slate-200 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-/* ─── Component Layer ───────────────────────────────── */
-@layer components {
-
-  /* Surface Cards */
-  .surface-card {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;   /* slate-200 */
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04);
-    transition: all 0.2s ease;
-  }
-  .dark .surface-card {
-    background-color: #0f172a;   /* slate-900 */
-    border-color: #1e293b;       /* slate-800 */
-    box-shadow: none;
-  }
-
-  /* Panel surfaces (sidebar / walkthrough) */
-  .surface-panel {
-    background-color: #ffffff;
-    border-right: 1px solid #e2e8f0;
-  }
-  .dark .surface-panel {
-    background-color: #0a0f1e;
-    border-right-color: #1e293b;
-  }
-
-  /* Buttons */
-  .btn-primary {
-    background-color: #4f46e5;   /* indigo-600 */
-    color: #ffffff;
-    font-weight: 700;
-    border-radius: 0.75rem;
-    padding: 0.5rem 1rem;
-    transition: all 0.2s ease;
-  }
-  .btn-primary:hover { background-color: #4338ca; }
-  .btn-primary:active { transform: scale(0.97); }
-
-  .dark .btn-primary {
-    background-color: #6366f1;   /* indigo-500 */
-    box-shadow: 0 0 20px rgba(99,102,241,0.25);
-  }
-  .dark .btn-primary:hover { background-color: #818cf8; }
-
-  .btn-ghost {
-    color: #64748b;
-    border-radius: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    transition: all 0.2s ease;
-  }
-  .btn-ghost:hover {
-    color: #0f172a;
-    background-color: #f1f5f9;
-  }
-  .dark .btn-ghost {
-    color: #94a3b8;
-  }
-  .dark .btn-ghost:hover {
-    color: #ffffff;
-    background-color: #1e293b;
-  }
-
-  .text-code { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* ─── Scrollbar ─────────────────────────────────────── */
-.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #94a3b8 transparent; }
-.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 999px; }
-.dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
-
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-
-/* ─── Animations ────────────────────────────────────── */
-@keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
-  50%       { box-shadow: 0 0 18px 4px rgba(99,102,241,0.22); }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
 }
-@keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
-.animate-fade-in  { animation: fadeIn  0.25s ease-out both; }
-.animate-slide-up { animation: slideUp 0.3s  ease-out both; }
-.animate-glow     { animation: glowPulse 1.4s ease-in-out infinite; }
-
-/* ─── Range Input ───────────────────────────────────── */
-input[type="range"] { -webkit-appearance: none; appearance: none; }
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2.5px solid #6366f1;
-  box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
-  cursor: pointer;
-  transition: transform 0.15s ease;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
-input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 
-/* ─── Interactive button defaults ───────────────────── */
-button, a, input, select {
-  transition: all 0.15s ease;
+/* Typography Overrides */
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Outfit', sans-serif;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Framer Motion Helper Classes */
+.gpu-acceleration {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Interactive Elements */
+button:focus-visible {
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
-button:focus-visible { outline: 2px solid #6366f1; }

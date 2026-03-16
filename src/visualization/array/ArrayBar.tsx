@@ -1,70 +1,79 @@
 import React from 'react';
-import { PointerIndicator } from './PointerIndicator';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../../utils/cn';
 
-interface ArrayBarProps {
+export type BarState = 'default' | 'comparing' | 'swap' | 'sorted' | 'pivot';
+
+interface Props {
   value: number;
-  maxValue: number;
-  state: 'default' | 'compare' | 'comparing' | 'swap' | 'found' | 'found_result' | 'sorted' | 'discarded' | 'overwrite';
-  pointers: string[];
+  max: number;
+  state: BarState;
+  index: number;
+  showLabel?: boolean;
 }
 
-/* Maps each state to a gradient + glow */
-const stateStyles: Record<string, { gradient: string; glow: string; rounded?: string }> = {
-  default:      { gradient: 'linear-gradient(to top, #6366f1, #a5b4fc)', glow: 'none' },
-  compare:      { gradient: 'linear-gradient(to top, #f59e0b, #fde68a)', glow: '0 0 14px 3px rgba(245,158,11,0.45)' },
-  comparing:    { gradient: 'linear-gradient(to top, #f59e0b, #fde68a)', glow: '0 0 14px 3px rgba(245,158,11,0.45)' },
-  swap:         { gradient: 'linear-gradient(to top, #ef4444, #fca5a5)', glow: '0 0 16px 4px rgba(239,68,68,0.50)' },
-  found:        { gradient: 'linear-gradient(to top, #10b981, #6ee7b7)', glow: '0 0 16px 4px rgba(16,185,129,0.50)' },
-  found_result: { gradient: 'linear-gradient(to top, #10b981, #6ee7b7)', glow: '0 0 16px 4px rgba(16,185,129,0.50)' },
-  sorted:       { gradient: 'linear-gradient(to top, #10b981, #34d399)', glow: 'none' },
-  discarded:    { gradient: 'linear-gradient(to top, #334155, #475569)', glow: 'none' },
-  overwrite:    { gradient: 'linear-gradient(to top, #8b5cf6, #c4b5fd)', glow: '0 0 14px 3px rgba(139,92,246,0.50)' },
+const stateColors: Record<BarState, { bar: string; glow: string; text: string }> = {
+  default:   { bar: 'bg-slate-300 dark:bg-slate-800',           glow: 'shadow-none',                    text: 'text-text-secondary' },
+  comparing: { bar: 'bg-amber-400 dark:bg-amber-500',           glow: 'shadow-glow-amber',             text: 'text-amber-600 dark:text-amber-400' },
+  swap:      { bar: 'bg-rose-500 animate-pulse',               glow: 'shadow-glow-red',               text: 'text-rose-600 dark:text-rose-400' },
+  sorted:    { bar: 'bg-emerald-500',                          glow: 'shadow-glow-emerald',           text: 'text-emerald-600 dark:text-emerald-400' },
+  pivot:     { bar: 'bg-accent-primary animate-bounce-short',  glow: 'shadow-glow-indigo',            text: 'text-accent-primary' },
 };
 
-export const ArrayBar: React.FC<ArrayBarProps> = React.memo(({ value, maxValue, state, pointers }) => {
-  const barHeight = Math.max((value / maxValue) * 100, 4);
-  const style = stateStyles[state] ?? stateStyles.default;
-  const isActive = state !== 'default' && state !== 'discarded' && state !== 'sorted';
-  const isDiscarded = state === 'discarded';
+export const ArrayBar: React.FC<Props> = ({ value, max, state, index, showLabel = true }) => {
+  const heightPercent = (value / max) * 100;
+  const colors = stateColors[state];
 
   return (
-    <div className="relative flex-1 h-full flex flex-col items-center justify-end">
-      {/* Top Pointers (pivot/M) */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 items-center z-30">
-        {pointers.filter(p => p === 'M' || p === 'pivot').map((label, i) => (
-          <PointerIndicator key={i} label={label} color="bg-violet-500" isBottom={false} />
-        ))}
-      </div>
-
-      {/* Value label */}
-      <span className={`absolute text-[8px] sm:text-[9px] font-bold transition-all leading-none select-none hidden sm:block ${
-        isActive ? 'text-white drop-shadow' : 'text-slate-400 dark:text-slate-500'
-      }`} style={{ bottom: `calc(${barHeight}% + 6px)` }}>
-        {value}
-      </span>
+    <div className="flex-1 flex flex-col items-center group relative h-full">
+      {/* Value Label */}
+      <AnimatePresence>
+        {showLabel && (
+          <motion.span
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+              "absolute -top-10 text-[10px] sm:text-xs font-mono font-black select-none pointer-events-none transition-colors duration-300",
+              colors.text
+            )}
+          >
+            {value}
+          </motion.span>
+        )}
+      </AnimatePresence>
 
       {/* Bar */}
-      <div
-        className={`w-full rounded-t-md transition-all duration-300 origin-bottom relative ${
-          isActive ? 'scale-x-[1.05] z-10' : ''
-        } ${isDiscarded ? 'opacity-25' : 'opacity-100'}`}
-        style={{
-          height: `${barHeight}%`,
-          background: style.gradient,
-          boxShadow: style.glow,
-          minHeight: '4px',
-        }}
-      >
-        {/* Top-shine */}
-        <div className="absolute top-0 inset-x-0 h-[2px] rounded-t-md bg-white/20" />
+      <div className="w-full flex-1 flex flex-col justify-end min-h-0 pt-12 pb-2">
+        <motion.div
+          layout
+          initial={{ height: 0 }}
+          animate={{ height: `${Math.max(heightPercent, 4)}%` }}
+          transition={{ type: 'spring', damping: 15, stiffness: 100 }}
+          className={cn(
+            "w-[85%] mx-auto rounded-t-xl transition-all duration-300 relative overflow-hidden",
+            colors.bar,
+            state !== 'default' && colors.glow
+          )}
+        >
+          {/* Shine effect for active states */}
+          {state !== 'default' && (
+            <motion.div 
+              initial={{ x: '-100%' }}
+              animate={{ x: '100%' }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+            />
+          )}
+
+          {/* Indicator Dot for mobile or tight views */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white/20" />
+        </motion.div>
       </div>
 
-      {/* Bottom Pointers (i, j, left, right…) */}
-      <div className="absolute bottom-0 translate-y-full flex flex-col gap-0.5 items-center z-30">
-        {pointers.filter(p => p !== 'M' && p !== 'pivot').map((label, i) => (
-          <PointerIndicator key={i} label={label} color="bg-indigo-500" isBottom />
-        ))}
-      </div>
+      {/* Index Label */}
+      <span className="mt-2 text-[8px] sm:text-[9px] font-black text-text-secondary opacity-40 uppercase tracking-widest font-mono">
+        {index.toString().padStart(2, '0')}
+      </span>
     </div>
   );
-});
+};

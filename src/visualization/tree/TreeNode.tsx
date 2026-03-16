@@ -1,5 +1,6 @@
 import React from 'react';
-import { useThemeStore } from '../../state/useThemeStore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../../theme/themeProvider';
 
 interface TreeNodeProps {
   x: number;
@@ -10,65 +11,78 @@ interface TreeNodeProps {
 }
 
 export const TreeNode: React.FC<TreeNodeProps> = ({ x, y, val, color, isActive }) => {
-  const { theme } = useThemeStore();
-  const gradientId = `grad-tree-${color.replace('#', '')}`;
+  const { resolvedTheme } = useTheme();
   const isDefault = color === '#334155' || color === '#e2e8f0';
-  const labelColor = isDefault && theme === 'light' ? '#64748b' : '#ffffff';
 
   return (
-    <g className="transition-all duration-700 select-none group">
-      <defs>
-        <radialGradient id={gradientId}>
-          <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.85} />
-        </radialGradient>
-      </defs>
+    <motion.g
+      layout
+      initial={false}
+      animate={{ x, y }}
+      transition={{ type: 'spring', damping: 20, stiffness: 150 }}
+      className="cursor-pointer select-none"
+    >
+      {/* Active Glow */}
+      <AnimatePresence>
+        {isActive && (
+          <motion.circle
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 2, opacity: 0.15 }}
+            exit={{ scale: 0, opacity: 0 }}
+            r={18}
+            fill={color}
+            className="filter blur-xl"
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Dynamic Glow for Active State */}
-      {isActive && (
-        <circle 
-          cx={x} cy={y} r={28} 
-          fill={color} 
-          className="opacity-15 animate-ping" 
-        />
-      )}
-      
-      {/* Node Shadow */}
-      <circle 
-        cx={x} cy={y} r={20} 
-        fill="black" 
-        className="opacity-5 group-hover:opacity-10 transition-opacity" 
-        transform="translate(1, 2)" 
-      />
-
-      {/* Main Bar (The Node itself) */}
-      <circle 
-        cx={x} cy={y} r={20} 
-        fill={`url(#${gradientId})`}
-        stroke={theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.03)'} 
+      {/* Outer Ring */}
+      <motion.circle
+        r={22}
+        fill="transparent"
+        stroke={color}
         strokeWidth={isActive ? 3 : 1}
-        className={`transition-all duration-500 transform ${isActive ? 'scale-110' : 'scale-100'}`} 
+        animate={{ 
+          opacity: isActive ? 1 : 0.2,
+          scale: isActive ? 1.1 : 1
+        }}
       />
 
-      {/* Glossy Top-Light */}
-      <circle 
-        cx={x - 5} cy={y - 5} r={7} 
-        fill="white" 
-        className="opacity-10 pointer-events-none" 
+      {/* Main Node */}
+      <motion.circle
+        r={18}
+        fill={color}
+        animate={{ 
+          scale: isActive ? 1.1 : 1
+        }}
+        stroke="#ffffff"
+        strokeWidth={1}
+        strokeOpacity={0.1}
+        className="shadow-premium"
       />
 
       {/* Value */}
-      <text 
-        x={x} y={y} 
-        textAnchor="middle" 
-        dominantBaseline="middle" 
-        fontSize="11" 
-        fontWeight="800" 
-        fill={labelColor}
-        className="font-sans tracking-tight drop-shadow-sm pointer-events-none transition-colors duration-500"
+      <motion.text
+        textAnchor="middle"
+        dy=".35em"
+        fill="#ffffff"
+        className="text-[10px] font-black font-sans tracking-tight"
+        animate={{ scale: isActive ? 1.2 : 1 }}
       >
         {val}
-      </text>
-    </g>
+      </motion.text>
+
+      {/* Pulse for Active */}
+      {isActive && (
+        <motion.circle
+          r={18}
+          stroke={color}
+          strokeWidth={2}
+          initial={{ scale: 1, opacity: 1 }}
+          animate={{ scale: 2, opacity: 0 }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: 'easeOut' }}
+        />
+      )}
+    </motion.g>
   );
 };
