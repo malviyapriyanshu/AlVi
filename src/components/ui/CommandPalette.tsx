@@ -120,14 +120,14 @@ export const CommandPalette: React.FC = () => {
 const CommandItem = ({ algo, onSelect, icon }: { algo: any, onSelect: () => void, icon: React.ReactNode }) => (
   <Command.Item
     onSelect={onSelect}
-    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-accent-primary/5 aria-selected:bg-accent-primary/10 aria-selected:text-accent-primary group transition-all"
+    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-accent-primary/5 aria-selected:bg-accent-primary/10 aria-selected:text-accent-primary group transition-all outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
   >
-    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-text-secondary group-aria-selected:bg-accent-primary group-aria-selected:text-white transition-colors">
+    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-text-muted group-aria-selected:bg-accent-primary group-aria-selected:text-white transition-colors">
       {icon}
     </div>
     <div className="flex flex-col">
       <span className="text-sm font-bold tracking-tight">{algo.info.name}</span>
-      <span className="text-[10px] text-text-secondary line-clamp-1">{algo.info.description}</span>
+      <span className="text-[11px] text-text-muted line-clamp-1 font-medium">{algo.info.description}</span>
     </div>
   </Command.Item>
 );

@@ -8,10 +8,12 @@ export const darkTheme = {
   '--border-color': designTokens.colors.dark.borderColor,
   '--text-primary': designTokens.colors.dark.textPrimary,
   '--text-secondary': designTokens.colors.dark.textSecondary,
+  '--text-muted': designTokens.colors.dark.textMuted,
   '--accent-primary': designTokens.colors.dark.accentPrimary,
   '--accent-glow': designTokens.colors.dark.accentGlow,
   '--success-color': designTokens.colors.dark.success,
   '--warning-color': designTokens.colors.dark.warning,
   '--danger-color': designTokens.colors.dark.danger,
   '--shadow-color': designTokens.colors.dark.shadow,
+  '--focus-ring': designTokens.colors.dark.ring,
 };

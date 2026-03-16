@@ -65,7 +65,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary"
+              aria-label="Open navigation menu"
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             >
               <Menu size={20} />
             </button>
@@ -75,8 +76,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
             
             <button 
-              className="px-3 py-2 bg-background-secondary border border-border rounded-xl flex items-center gap-2 text-text-secondary hover:text-text-primary transition-all group md:hidden"
+              className="px-3 py-2 bg-background-secondary border border-border rounded-xl flex items-center gap-2 text-text-secondary hover:text-text-primary transition-all group md:hidden outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              aria-label="Search algorithms"
             >
               <Search size={16} />
             </button>
@@ -84,31 +86,33 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
           <div className="flex items-center gap-2 md:gap-4">
              {/* Global Search Button */}
-             <button
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-              className="w-10 h-10 hidden md:flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative"
-              title="Global Search (⌘K)"
-            >
-              <Search size={18} />
-              <div className="absolute top-12 left-1/2 -translate-x-1/2 px-2 py-1 bg-text-primary text-background-primary text-[9px] font-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Search ⌘K
-              </div>
-            </button>
+              <button
+               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+               aria-label="Global Search"
+               className="w-10 h-10 hidden md:flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+               title="Global Search (⌘K)"
+             >
+               <Search size={18} />
+               <div className="absolute top-12 left-1/2 -translate-x-1/2 px-2 py-1 bg-text-primary text-background-primary text-[11px] font-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                 Search ⌘K
+               </div>
+             </button>
 
-             <button
-              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative"
-            >
-              {resolvedTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
+              <button
+               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+               aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+               className="w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+             >
+               {resolvedTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
+             </button>
             
             <div className="hidden sm:flex w-px h-6 bg-border mx-2" />
             
             <div className="flex items-center gap-3">
-               <div className="text-right hidden lg:block">
-                  <p className="text-xs font-black text-text-primary leading-none">Priyanshu</p>
-                  <p className="text-[10px] font-bold text-accent-primary mt-1">Beta Access</p>
-               </div>
+                <div className="text-right hidden lg:block leading-none">
+                   <p className="text-sm font-black text-text-primary">Priyanshu</p>
+                   <p className="text-[11px] font-bold text-accent-primary mt-1">Beta Access</p>
+                </div>
                <div className="w-10 h-10 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary">
                   <User size={20} />
                </div>

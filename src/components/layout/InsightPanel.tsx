@@ -46,15 +46,15 @@ export const InsightPanel: React.FC<Props> = ({
       {/* Header Info */}
       <div className="mb-2">
         <div className="flex items-center gap-2 mb-2">
-           <div className="px-2 py-0.5 rounded-md bg-accent-primary/10 border border-accent-primary/20 text-[9px] font-black text-accent-primary uppercase tracking-widest">
+           <div className="px-2 py-0.5 rounded-md bg-accent-primary/10 border border-accent-primary/20 text-[11px] font-black text-accent-primary uppercase tracking-widest">
               {info.category}
            </div>
-           <span className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] opacity-40">Insight Core</span>
+           <span className="text-[11px] font-bold text-text-muted uppercase tracking-[0.2em]">Insight Core</span>
         </div>
         <h2 className="text-2xl font-black text-text-primary tracking-tighter leading-none mb-3">
            {info.name}
         </h2>
-        <p className="text-xs font-bold text-text-secondary leading-relaxed line-clamp-2 italic">
+        <p className="text-sm font-medium text-text-secondary leading-relaxed line-clamp-3 italic">
            "{info.description}"
         </p>
       </div>
@@ -63,10 +63,10 @@ export const InsightPanel: React.FC<Props> = ({
       <div className="bg-background-secondary border border-border rounded-2xl p-4 shadow-sm overflow-hidden relative">
          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-accent-primary/20 to-transparent" />
          <div className="flex justify-between items-center mb-4">
-            <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest flex items-center gap-2">
+            <span className="text-[11px] font-black text-text-secondary uppercase tracking-widest flex items-center gap-2">
                <Terminal size={12} className="text-accent-primary" /> Instruction Stream
             </span>
-            <span className="text-[10px] font-mono font-bold text-accent-primary">{progress || 0}%</span>
+            <span className="text-[11px] font-mono font-bold text-accent-primary" aria-label={`Simulation progress: ${progress || 0}%`}>{progress || 0}%</span>
          </div>
          
          <div className="min-h-[60px] flex items-center gap-4 bg-background-primary/50 rounded-xl p-3 border border-border/50">
@@ -115,16 +115,20 @@ export const InsightPanel: React.FC<Props> = ({
               onToggle={() => toggle('pseudocode')} 
             />
             {expanded.pseudocode && (
-               <div className="flex bg-background-secondary p-1 rounded-lg border border-border scale-90 origin-right">
-                  <button 
-                    onClick={() => setCodeMode('blueprint')}
-                    className={cn("px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest transition-all", codeMode === 'blueprint' ? "bg-accent-primary text-white" : "text-text-secondary")}
-                  >Logic</button>
-                  <button 
-                    onClick={() => setCodeMode('source')}
-                    className={cn("px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest transition-all", codeMode === 'source' ? "bg-accent-primary text-white" : "text-text-secondary")}
-                  >Source</button>
-               </div>
+                <div className="flex bg-background-secondary p-1 rounded-lg border border-border scale-90 origin-right" role="tablist">
+                   <button 
+                     role="tab"
+                     aria-selected={codeMode === 'blueprint'}
+                     onClick={() => setCodeMode('blueprint')}
+                     className={cn("px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest transition-all focus-visible:ring-2 focus-visible:ring-accent-ring outline-none", codeMode === 'blueprint' ? "bg-accent-primary text-white" : "text-text-secondary hover:text-text-primary")}
+                   >Logic</button>
+                   <button 
+                     role="tab"
+                     aria-selected={codeMode === 'source'}
+                     onClick={() => setCodeMode('source')}
+                     className={cn("px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest transition-all focus-visible:ring-2 focus-visible:ring-accent-ring outline-none", codeMode === 'source' ? "bg-accent-primary text-white" : "text-text-secondary hover:text-text-primary")}
+                   >Source</button>
+                </div>
             )}
          </div>
          <AnimatePresence mode="wait">
@@ -181,16 +185,17 @@ export const InsightPanel: React.FC<Props> = ({
 const SectionHeader = ({ title, icon, isOpen, onToggle }: { title: string, icon: React.ReactNode, isOpen: boolean, onToggle: () => void }) => (
   <button 
     onClick={onToggle}
-    className="w-full flex items-center justify-between group"
+    aria-expanded={isOpen}
+    className="w-full flex items-center justify-between group outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background-primary rounded-xl"
   >
     <div className="flex items-center gap-2.5">
       <div className={cn(
         "p-1.5 rounded-lg transition-colors",
-        isOpen ? "bg-accent-primary text-white" : "bg-slate-100 dark:bg-slate-800 text-text-secondary group-hover:text-text-primary"
+        isOpen ? "bg-accent-primary text-white shadow-glow-indigo" : "bg-slate-100 dark:bg-slate-800 text-text-secondary group-hover:text-text-primary"
       )}>
         {icon}
       </div>
-      <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary group-hover:text-text-primary transition-colors">
+      <span className="text-[11px] font-black uppercase tracking-widest text-text-secondary group-hover:text-text-primary transition-colors">
         {title}
       </span>
     </div>
@@ -203,10 +208,10 @@ const CompactComplexityCard = ({ label, value }: { label: string, value: string 
   const isExpensive = value.includes('N²') || value.includes('2^N') || value.includes('N!');
   
   return (
-    <div className="p-2.5 rounded-xl border border-border bg-background-secondary flex flex-col gap-1">
-       <span className="text-[7px] font-black text-text-secondary uppercase tracking-widest opacity-60">{label}</span>
+    <div className="p-2.5 rounded-xl border border-border bg-background-secondary flex flex-col gap-1 transition-colors hover:border-accent-primary/20">
+       <span className="text-[9px] font-black text-text-muted uppercase tracking-widest">{label}</span>
        <span className={cn(
-         "text-[10px] font-mono font-black",
+         "text-[11px] font-mono font-black",
          isOptimal ? "text-success" : isExpensive ? "text-danger" : "text-warning"
        )}>
           {value}

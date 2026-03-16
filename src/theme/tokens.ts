@@ -3,32 +3,36 @@ export const designTokens = {
     dark: {
       backgroundPrimary: '#020617', // slate-950
       backgroundSecondary: '#0f172a', // slate-900
-      panelBackground: 'rgba(15, 23, 42, 0.8)',
+      panelBackground: 'rgba(15, 23, 42, 0.9)',
       cardBackground: 'rgba(30, 41, 59, 0.4)', // slate-800
-      borderColor: 'rgba(255, 255, 255, 0.08)',
+      borderColor: 'rgba(255, 255, 255, 0.12)',
       textPrimary: '#f8fafc', // slate-50
-      textSecondary: '#94a3b8', // slate-400
-      accentPrimary: '#6366f1', // indigo-500
-      accentGlow: 'rgba(99, 102, 241, 0.15)',
-      success: '#10b981', // emerald-500
-      warning: '#f59e0b', // amber-500
-      danger: '#ef4444', // red-500
-      shadow: 'rgba(0, 0, 0, 0.4)',
+      textSecondary: '#cbd5e1', // slate-300 (Higher contrast than slate-400)
+      textMuted: '#94a3b8', // slate-400
+      accentPrimary: '#818cf8', // indigo-400 (Better contrast in dark mode)
+      accentGlow: 'rgba(129, 140, 248, 0.15)',
+      success: '#34d399', // emerald-400
+      warning: '#fbbf24', // amber-400
+      danger: '#f87171', // red-400
+      shadow: 'rgba(0, 0, 0, 0.5)',
+      ring: '#6366f1',
     },
     light: {
       backgroundPrimary: '#f8fafc', // slate-50
       backgroundSecondary: '#ffffff',
-      panelBackground: 'rgba(255, 255, 255, 0.8)',
-      cardBackground: 'rgba(241, 245, 249, 0.6)', // slate-100
-      borderColor: 'rgba(0, 0, 0, 0.08)',
+      panelBackground: 'rgba(255, 255, 255, 0.95)',
+      cardBackground: 'rgba(241, 245, 249, 0.8)', // slate-100
+      borderColor: 'rgba(0, 0, 0, 0.1)',
       textPrimary: '#0f172a', // slate-900
-      textSecondary: '#64748b', // slate-500
+      textSecondary: '#475569', // slate-600 (Higher contrast than slate-500)
+      textMuted: '#64748b', // slate-500
       accentPrimary: '#4f46e5', // indigo-600
       accentGlow: 'rgba(79, 70, 229, 0.1)',
       success: '#059669', // emerald-600
       warning: '#d97706', // amber-600
       danger: '#dc2626', // red-600
-      shadow: 'rgba(0, 0, 0, 0.05)',
+      shadow: 'rgba(0, 0, 0, 0.08)',
+      ring: '#4f46e5',
     },
   },
   spacing: {

@@ -18,10 +18,12 @@ export default {
         text: {
           primary: 'var(--text-primary)',
           secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
         },
         accent: {
           primary: 'var(--accent-primary)',
           glow: 'var(--accent-glow)',
+          ring: 'var(--focus-ring)',
         },
         success: 'var(--success-color)',
         warning: 'var(--warning-color)',

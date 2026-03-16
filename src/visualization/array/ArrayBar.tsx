@@ -53,11 +53,21 @@ export const ArrayBar: React.FC<Props> = ({ value, max, state, index, showLabel 
           animate={{ height: `${Math.max(heightPercent, 4)}%` }}
           transition={{ type: 'spring', damping: 15, stiffness: 100 }}
           className={cn(
-            "w-[85%] mx-auto rounded-t-xl transition-all duration-300 relative overflow-hidden",
+            "w-[85%] mx-auto rounded-t-xl transition-all duration-300 relative overflow-hidden flex flex-col items-center pt-2",
             colors.bar,
             state !== 'default' && colors.glow
           )}
+          aria-label={`Value ${value}, state ${state}`}
         >
+          {/* Visual Indicator for color-blind users */}
+          <div className="flex flex-col items-center gap-1 opacity-60">
+             {state === 'sorted' && <span className="text-[10px] font-black text-white">✓</span>}
+             {state === 'swap' && <span className="text-[10px] font-black text-white">⇄</span>}
+             {state === 'comparing' && <span className="text-[10px] font-black text-white">?</span>}
+             {state === 'pivot' && <span className="text-[10px] font-black text-white">★</span>}
+             {state === 'discarded' && <span className="text-[10px] font-black text-white/40">✕</span>}
+          </div>
+
           {/* Shine effect for active states */}
           {state !== 'default' && (
             <motion.div 
@@ -67,14 +77,11 @@ export const ArrayBar: React.FC<Props> = ({ value, max, state, index, showLabel 
               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
             />
           )}
-
-          {/* Indicator Dot for mobile or tight views */}
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white/20" />
         </motion.div>
       </div>
 
       {/* Index Label */}
-      <span className="mt-2 text-[8px] sm:text-[9px] font-black text-text-secondary opacity-40 uppercase tracking-widest font-mono">
+      <span className="mt-2 text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">
         {index.toString().padStart(2, '0')}
       </span>
     </div>

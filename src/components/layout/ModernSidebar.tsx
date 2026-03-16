@@ -61,8 +61,8 @@ export const ModernSidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }
       {/* Nav Items */}
       <nav className="flex-1 px-3 space-y-1 overflow-hidden overflow-y-auto custom-scrollbar">
          <p className={cn(
-           "px-4 text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-4 transition-opacity",
-           isCollapsed ? "opacity-0" : "opacity-40"
+           "px-4 text-[11px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 transition-opacity",
+           isCollapsed && "opacity-0"
          )}>
            Core modules
          </p>
@@ -72,8 +72,9 @@ export const ModernSidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }
             <button
               key={item.id}
               onClick={() => onTabChange(item.id as TabId)}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
-                "w-full group relative flex items-center gap-3 px-3 py-2 rounded-2xl transition-all duration-300",
+                "w-full group relative flex items-center gap-3 px-3 py-2 rounded-2xl transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-inset",
                 isActive 
                   ? "bg-accent-primary/5 text-accent-primary" 
                   : "text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-text-primary"
@@ -89,7 +90,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }
               {!isCollapsed && (
                 <div className="flex flex-col items-start leading-none pt-0.5">
                    <span className="font-bold text-sm tracking-tight">{item.label}</span>
-                   <span className="text-[10px] opacity-40 font-bold uppercase tracking-widest mt-1">Module</span>
+                   <span className="text-[11px] text-text-muted font-bold uppercase tracking-widest mt-1">Module</span>
                 </div>
               )}
 
@@ -107,12 +108,13 @@ export const ModernSidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }
 
       {/* Footer */}
       <div className="p-4 border-t border-border mt-auto">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-full h-11 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 text-text-secondary transition-colors"
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <div className="flex items-center gap-3 font-black text-[10px] uppercase tracking-widest"><ChevronLeft size={16} /> Hide Workspace</div>}
-        </button>
+         <button
+           onClick={() => setIsCollapsed(!isCollapsed)}
+           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+           className="w-full h-11 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 text-text-secondary transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+         >
+           {isCollapsed ? <ChevronRight size={20} /> : <div className="flex items-center gap-3 font-black text-[11px] uppercase tracking-widest"><ChevronLeft size={16} /> Hide Workspace</div>}
+         </button>
       </div>
     </motion.aside>
   );

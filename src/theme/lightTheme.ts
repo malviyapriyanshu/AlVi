@@ -8,10 +8,12 @@ export const lightTheme = {
   '--border-color': designTokens.colors.light.borderColor,
   '--text-primary': designTokens.colors.light.textPrimary,
   '--text-secondary': designTokens.colors.light.textSecondary,
+  '--text-muted': designTokens.colors.light.textMuted,
   '--accent-primary': designTokens.colors.light.accentPrimary,
   '--accent-glow': designTokens.colors.light.accentGlow,
   '--success-color': designTokens.colors.light.success,
   '--warning-color': designTokens.colors.light.warning,
   '--danger-color': designTokens.colors.light.danger,
   '--shadow-color': designTokens.colors.light.shadow,
+  '--focus-ring': designTokens.colors.light.ring,
 };
