@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
-export type BarState = 'default' | 'comparing' | 'swap' | 'sorted' | 'pivot';
+export type BarState = 'default' | 'comparing' | 'swap' | 'sorted' | 'pivot' | 'overwrite' | 'discarded' | 'found';
 
 interface Props {
   value: number;
@@ -18,6 +18,9 @@ const stateColors: Record<BarState, { bar: string; glow: string; text: string }>
   swap:      { bar: 'bg-rose-500 animate-pulse',               glow: 'shadow-glow-red',               text: 'text-rose-600 dark:text-rose-400' },
   sorted:    { bar: 'bg-emerald-500',                          glow: 'shadow-glow-emerald',           text: 'text-emerald-600 dark:text-emerald-400' },
   pivot:     { bar: 'bg-accent-primary animate-bounce-short',  glow: 'shadow-glow-indigo',            text: 'text-accent-primary' },
+  overwrite: { bar: 'bg-sky-500',                              glow: 'shadow-glow-indigo',            text: 'text-sky-600 dark:text-sky-400' },
+  discarded: { bar: 'bg-slate-100 dark:bg-slate-900 opacity-30', glow: 'shadow-none',                    text: 'text-slate-300 dark:text-slate-700' },
+  found:     { bar: 'bg-yellow-400',                           glow: 'shadow-glow-amber scale-110',   text: 'text-yellow-600 dark:text-yellow-400 font-black' },
 };
 
 export const ArrayBar: React.FC<Props> = ({ value, max, state, index, showLabel = true }) => {
