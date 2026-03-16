@@ -10,12 +10,14 @@ import {
   Clock,
   Database,
   Cpu,
-  Info
+  Info,
+  FileText
 } from 'lucide-react';
 import { AlgorithmInfo } from '../../types/algorithmTypes';
 import { AnimationStep } from '../../types/animationTypes';
 import { cn } from '../../utils/cn';
 import { PseudocodeViewer } from '../learning/PseudocodeViewer';
+import { SourceCodeViewer } from '../learning/SourceCodeViewer';
 
 interface Props {
   info: AlgorithmInfo;
@@ -35,6 +37,7 @@ export const InsightPanel: React.FC<Props> = ({
     logic: true,
     complexity: true
   });
+  const [codeMode, setCodeMode] = useState<'blueprint' | 'source'>('blueprint');
 
   const toggle = (id: string) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
@@ -103,26 +106,46 @@ export const InsightPanel: React.FC<Props> = ({
          </AnimatePresence>
       </div>
 
-      {/* Pseudocode - High Fidelity */}
       <div className="space-y-3">
-         <SectionHeader 
-           title="Logic Blueprint" 
-           icon={<Code2 size={14} />} 
-           isOpen={expanded.pseudocode} 
-           onToggle={() => toggle('pseudocode')} 
-         />
-         <AnimatePresence>
+         <div className="flex items-center justify-between">
+            <SectionHeader 
+              title="Logic Blueprint" 
+              icon={<Code2 size={14} />} 
+              isOpen={expanded.pseudocode} 
+              onToggle={() => toggle('pseudocode')} 
+            />
+            {expanded.pseudocode && (
+               <div className="flex bg-background-secondary p-1 rounded-lg border border-border scale-90 origin-right">
+                  <button 
+                    onClick={() => setCodeMode('blueprint')}
+                    className={cn("px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest transition-all", codeMode === 'blueprint' ? "bg-accent-primary text-white" : "text-text-secondary")}
+                  >Logic</button>
+                  <button 
+                    onClick={() => setCodeMode('source')}
+                    className={cn("px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest transition-all", codeMode === 'source' ? "bg-accent-primary text-white" : "text-text-secondary")}
+                  >Source</button>
+               </div>
+            )}
+         </div>
+         <AnimatePresence mode="wait">
             {expanded.pseudocode && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
+                key={codeMode}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
                 className="overflow-hidden"
               >
-                <PseudocodeViewer 
-                   code={info.pseudocode} 
-                   highlightLine={currentStep?.line} 
-                />
+                {codeMode === 'blueprint' ? (
+                   <PseudocodeViewer 
+                      code={info.pseudocode} 
+                      highlightLine={currentStep?.line} 
+                   />
+                ) : (
+                   <SourceCodeViewer 
+                      code={info.pseudocode} // For now we use pseudocode as mock source if implementation is missing
+                   />
+                )}
               </motion.div>
             )}
          </AnimatePresence>

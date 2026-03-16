@@ -9,6 +9,7 @@ export const TABS = [
   { id: 'graph',      label: 'Graph',      icon: GitBranch },
   { id: 'dp',         label: 'DP',         icon: Layers },
   { id: 'techniques', label: 'Techniques', icon: Wand2 },
+  { id: 'comparison', label: 'Race',       icon: BarChart3 },
   { id: 'quiz',       label: 'Quiz',       icon: Trophy },
   { id: 'paths',      label: 'Learn',      icon: BarChart2 },
 ] as const;

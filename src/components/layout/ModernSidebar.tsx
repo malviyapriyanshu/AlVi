@@ -28,6 +28,7 @@ const navItems = [
   { id: 'tree',       label: 'Trees',      icon: GitBranch },
   { id: 'dp',         label: 'DP',         icon: Box },
   { id: 'techniques', label: 'Techniques', icon: TrendingUp },
+  { id: 'comparison', label: 'Race',       icon: BarChart3 },
   { id: 'quiz',       label: 'Assessment', icon: Award },
   { id: 'paths',      label: 'Progress',   icon: BarChart3 },
 ];

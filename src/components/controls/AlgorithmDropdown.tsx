@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Search, Terminal, Sparkles } from 'lucide-react';
+import { ChevronDown, Search, Terminal, Sparkles, Box, Zap } from 'lucide-react';
 import { useAlgorithmStore } from '../../state/useAlgorithmStore';
 import { ALL_ALGORITHMS, ALGORITHM_CATEGORIES } from '../../data/algorithmRegistry';
 import { AlgorithmEntry } from '../../types/algorithmTypes';
+import { cn } from '../../utils/cn';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AlgorithmDropdownProps {
   label: string;
@@ -18,8 +20,13 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, dis
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredAlgorithms = useMemo(() => {
+    // Current category filtering
     const categoryIds = (ALGORITHM_CATEGORIES as any)[selectedCategory] || [];
     const algorithms = categoryIds.map((id: string) => ALL_ALGORITHMS[id]).filter(Boolean) as AlgorithmEntry[];
+    
+    // Also include other algorithms if they match search? 
+    // Usually a dropdown in this context might should show all or just current category.
+    // Given the 3-column layout, we'll keep it to category but allow global search in command palette.
     
     if (!searchQuery) return algorithms;
     return algorithms.filter(algo => 
@@ -36,11 +43,11 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, dis
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setActiveIndex(prev => (prev + 1) % filteredAlgorithms.length);
+        setActiveIndex(prev => (prev + 1) % Math.max(filteredAlgorithms.length, 1));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setActiveIndex(prev => (prev - 1 + filteredAlgorithms.length) % filteredAlgorithms.length);
+        setActiveIndex(prev => (prev - 1 + filteredAlgorithms.length) % Math.max(filteredAlgorithms.length, 1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -83,87 +90,107 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, dis
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        className={`relative flex w-full items-center justify-between rounded-xl border px-3 py-2 text-sm font-bold transition-all
-          ${isOpen 
-            ? 'bg-white dark:bg-slate-900 border-indigo-500/50 ring-4 ring-indigo-500/10' 
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/80 shadow-sm'}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={cn(
+          "relative flex w-full items-center justify-between rounded-2xl border px-4 py-2.5 text-sm font-black transition-all duration-300",
+          isOpen 
+            ? "bg-background-primary border-accent-primary shadow-glow-indigo" 
+            : "bg-background-secondary border-border text-text-secondary hover:text-text-primary hover:border-accent-primary/50 shadow-sm",
+          disabled && "opacity-40 cursor-not-allowed"
+        )}
       >
-        <div className="flex items-center gap-2.5 truncate">
-          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
-            <Terminal size={12} strokeWidth={2.5} />
+        <div className="flex items-center gap-3 truncate">
+          <div className={cn(
+            "p-1.5 rounded-lg transition-colors",
+            isOpen ? "bg-accent-primary text-white" : "bg-background-primary text-text-secondary"
+          )}>
+            <Box size={14} />
           </div>
-          <div className="flex flex-col items-start leading-none gap-0.5">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
-            <span className="truncate text-slate-900 dark:text-slate-100 text-xs tracking-tight">{selectedOption?.name || 'Select...'}</span>
+          <div className="flex flex-col items-start leading-none gap-1">
+            <span className="text-[8px] font-black text-text-secondary uppercase tracking-[0.2em]">{label}</span>
+            <span className="truncate text-text-primary text-xs tracking-tight">{selectedOption?.name || 'Select Module...'}</span>
           </div>
         </div>
-        <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : ''}`} />
+        <ChevronDown size={14} className={cn("text-text-secondary transition-transform duration-500", isOpen && "rotate-180 text-accent-primary")} />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] z-[100] w-full min-w-[320px] rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-premium animate-fade-in overflow-hidden" role="listbox">
-          {/* Search Header */}
-          <div className="p-3 bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} strokeWidth={2.5} />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Find algorithm..."
-                value={searchQuery}
-                onKeyDown={handleKeyDown}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-9 pr-3 text-[11px] font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/5 transition-all"
-              />
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute top-[calc(100%+12px)] z-[100] w-full min-w-[300px] bg-background-primary border border-border rounded-3xl shadow-premium overflow-hidden"
+          >
+            {/* Search Header */}
+            <div className="p-4 bg-background-secondary/50 border-b border-border transition-colors group-focus-within:bg-background-secondary">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary opacity-40" size={14} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Engine Search..."
+                  value={searchQuery}
+                  onKeyDown={handleKeyDown}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-background-primary border border-border rounded-xl py-2 pl-10 pr-4 text-xs font-bold text-text-primary placeholder:text-text-secondary/40 focus:outline-none focus:border-accent-primary transition-all"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* List Options */}
-          <div className="p-2 overflow-y-auto max-h-[300px] custom-scrollbar">
-            {filteredAlgorithms.length > 0 ? (
-              <div className="grid grid-cols-1 gap-0.5">
-                {filteredAlgorithms.map((algo: AlgorithmEntry, index: number) => {
-                  const isSelected = selectedAlgorithmId === algo.id;
-                  const isActive = activeIndex === index;
-                  return (
-                    <button
-                      key={algo.id}
-                      onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      role="option"
-                      aria-selected={isSelected}
-                      className={`flex w-full items-center justify-between px-3 py-2.5 rounded-xl transition-all
-                        ${(isSelected || isActive)
-                          ? 'bg-indigo-600 text-white shadow-btn-indigo'
-                          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-slate-300 dark:bg-slate-700'}`} />
-                        <span className="text-xs font-bold truncate tracking-tight">{algo.info.name}</span>
-                      </div>
-                      {isSelected ? (
-                         <Sparkles size={11} className="text-amber-300" />
-                      ) : (
-                         <span className="text-[8px] font-black uppercase tracking-widest opacity-40">{algo.info.complexity?.time.average}</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="py-12 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center mx-auto mb-3">
-                  <Search size={20} className="text-slate-300" />
+            {/* List */}
+            <div className="p-2 overflow-y-auto max-h-[320px] custom-scrollbar">
+              {filteredAlgorithms.length > 0 ? (
+                <div className="space-y-1">
+                  {filteredAlgorithms.map((algo, index) => {
+                    const isSelected = selectedAlgorithmId === algo.id;
+                    const isActive = activeIndex === index;
+                    return (
+                      <button
+                        key={algo.id}
+                        onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200",
+                          (isSelected || isActive)
+                            ? "bg-accent-primary text-white shadow-glow-indigo"
+                            : "text-text-secondary hover:bg-background-secondary hover:text-text-primary"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                           <div className={cn(
+                             "w-1.5 h-1.5 rounded-full transition-colors",
+                             isSelected ? "bg-white" : "bg-text-secondary/20"
+                           )} />
+                           <span className="text-xs font-black tracking-tight">{algo.info.name}</span>
+                        </div>
+                        {isSelected ? (
+                          <Sparkles size={11} className="text-white/80" />
+                        ) : (
+                          <span className="text-[9px] font-mono font-black uppercase tracking-widest opacity-40">{algo.info.complexity?.time.average}</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No matches found</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              ) : (
+                <div className="py-10 text-center flex flex-col items-center gap-3 opacity-30">
+                  <Box size={24} className="text-text-secondary" />
+                  <p className="text-[10px] font-black uppercase tracking-widest leading-none">Vacuum Detected</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Command Shortcut Info */}
+            <div className="px-4 py-3 bg-background-secondary/30 border-t border-border flex items-center justify-between">
+               <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest">Global Search</span>
+               <div className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 rounded border border-border bg-background-primary text-[9px] font-black text-text-primary shadow-sm">⌘</kbd>
+                  <kbd className="px-1.5 py-0.5 rounded border border-border bg-background-primary text-[9px] font-black text-text-primary shadow-sm">K</kbd>
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

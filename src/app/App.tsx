@@ -29,6 +29,12 @@ import { ArrayCanvas } from '../visualization/array/ArrayCanvas';
 import { GraphCanvas } from '../visualization/graph/GraphCanvas';
 import { TreeCanvas } from '../visualization/tree/TreeCanvas';
 import { DPTable } from '../visualization/dp/DPTable';
+import { ComparisonCanvas } from '../components/comparison/ComparisonCanvas';
+
+// Algorithms for Race
+import { bubbleSort } from '../algorithms/sorting/bubbleSort';
+import { quickSort } from '../algorithms/sorting/quickSort';
+import { mergeSort } from '../algorithms/sorting/mergeSort';
 
 // Non-Viz Tabs
 import { QuizCard } from '../components/quiz/QuizCard';
@@ -71,7 +77,8 @@ export default function App() {
   }, [activeTab, arrayExplanation, steps, currentStepIndex]);
 
   const handleNewArray = useCallback(() => {
-    const newArr = generateRandomArray(15, 10, 200);
+    const size = activeTab === 'comparison' ? 40 : 15;
+    const newArr = generateRandomArray(size, 10, 200);
     setArray(newArr);
     setTarget(
       ['binary', 'two-pointer'].includes(selectedAlgorithmId)
@@ -79,7 +86,7 @@ export default function App() {
         : null
     );
     resetPlayback();
-  }, [resetPlayback, selectedAlgorithmId]);
+  }, [resetPlayback, selectedAlgorithmId, activeTab]);
 
   useEffect(() => { handleNewArray(); }, [handleNewArray]);
 
@@ -156,7 +163,19 @@ export default function App() {
                 )}
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <div className="flex-1 overflow-y-auto custom-scrollbar h-full">
+                {activeTab === 'comparison' && (
+                  <div className="h-full">
+                    <ComparisonCanvas 
+                      array={array}
+                      algorithms={[
+                        { id: 'bubble', name: 'Bubble Sort', color: '#f59e0b', fn: bubbleSort },
+                        { id: 'quick',  name: 'Quick Sort',  color: '#6366f1', fn: quickSort },
+                        { id: 'merge',  name: 'Merge Sort',  color: '#ec4899', fn: mergeSort },
+                      ]}
+                    />
+                  </div>
+                )}
                 {activeTab === 'quiz' && (
                   <div className="py-12">
                      <QuizCard questions={quizQuestions} onComplete={(score, total) => recordQuizScore('main', Math.round(score/total*100))} />

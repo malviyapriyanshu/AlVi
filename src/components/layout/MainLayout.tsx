@@ -8,6 +8,8 @@ import { Sun, Moon, Search, User, Menu, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { AmbientBackground } from '../ui/AmbientBackground';
 
+import { AlgorithmDropdown } from '../controls/AlgorithmDropdown';
+
 interface MainLayoutProps {
   children: React.ReactNode;
   activeTab: TabId;
@@ -67,20 +69,35 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             >
               <Menu size={20} />
             </button>
+            
+            <div className="hidden md:block w-64">
+               <AlgorithmDropdown label="Algorithm" />
+            </div>
+            
             <button 
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-900 border border-border rounded-xl flex items-center gap-3 text-text-secondary hover:text-text-primary transition-all group"
+              className="px-3 py-2 bg-background-secondary border border-border rounded-xl flex items-center gap-2 text-text-secondary hover:text-text-primary transition-all group md:hidden"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
             >
               <Search size={16} />
-              <span className="hidden sm:inline text-xs font-bold tracking-tight">Search algorithms...</span>
-              <kbd className="hidden sm:flex text-[10px] bg-white dark:bg-black px-1.5 py-0.5 rounded border border-border opacity-60 group-hover:opacity-100 uppercase">⌘ K</kbd>
             </button>
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
+             {/* Global Search Button */}
+             <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="w-10 h-10 hidden md:flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative"
+              title="Global Search (⌘K)"
+            >
+              <Search size={18} />
+              <div className="absolute top-12 left-1/2 -translate-x-1/2 px-2 py-1 bg-text-primary text-background-primary text-[9px] font-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Search ⌘K
+              </div>
+            </button>
+
              <button
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-background-secondary border border-border text-text-secondary hover:text-accent-primary hover:border-accent-primary transition-all group relative"
             >
               {resolvedTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
