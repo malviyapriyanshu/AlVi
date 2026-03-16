@@ -40,6 +40,9 @@ import { mergeSort } from '../algorithms/sorting/mergeSort';
 import { QuizCard } from '../components/quiz/QuizCard';
 import { LearningPathPanel } from '../components/learning/LearningPath';
 
+// Landing Page
+import LandingPage from '../components/landing/LandingPage';
+
 const SAMPLE_GRAPH = {
   directed: false,
   nodes: [
@@ -54,6 +57,7 @@ const SAMPLE_GRAPH = {
 };
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>('sorting');
   const [array, setArray] = useState<number[]>([]);
   const [target, setTarget] = useState<number | null>(null);
@@ -116,6 +120,10 @@ export default function App() {
 
   const progress = Math.round((currentStepIndex / Math.max(steps.length - 1, 1)) * 100);
   const isVizTab = ['sorting','searching','techniques','graph','tree','dp'].includes(activeTab);
+
+  if (showLanding) {
+    return <LandingPage onLaunch={() => setShowLanding(false)} />;
+  }
 
   return (
     <MainLayout

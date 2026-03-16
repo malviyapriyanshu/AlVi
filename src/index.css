@@ -47,7 +47,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-primary);
   color: var(--text-primary);
-  overflow: hidden;
+  overflow-x: hidden;
   font-family: 'Inter', system-ui, sans-serif;
 }
 
