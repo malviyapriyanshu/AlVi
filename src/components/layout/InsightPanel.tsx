@@ -24,13 +24,15 @@ interface Props {
   currentStep?: AnimationStep;
   explanation?: string;
   progress?: number;
+  currentStepIndex?: number;
 }
 
 export const InsightPanel: React.FC<Props> = ({ 
   info, 
   currentStep, 
   explanation,
-  progress 
+  progress,
+  currentStepIndex = 0
 }) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     pseudocode: true,
@@ -69,13 +71,20 @@ export const InsightPanel: React.FC<Props> = ({
             <span className="text-[10px] font-mono font-bold text-accent-primary">{progress || 0}%</span>
          </div>
          
-         <div className="min-h-[60px] flex items-center gap-4 bg-background-primary/50 rounded-xl p-3 border border-border/50">
-            <div className="shrink-0 w-8 h-8 rounded-lg bg-accent-primary/5 border border-accent-primary/10 flex items-center justify-center text-accent-primary">
-               <Zap size={16} />
+         <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3 bg-background-primary/50 rounded-xl p-3 border border-border/50">
+               <div className="shrink-0 w-8 h-8 rounded-lg bg-accent-primary/5 border border-accent-primary/10 flex items-center justify-center text-accent-primary">
+                  <span className="text-[10px] font-black">{currentStepIndex + 1}</span>
+               </div>
+               <p className="text-[11px] font-bold text-text-primary leading-relaxed line-clamp-2">
+                  {explanation || "Awaiting simulation start..."}
+               </p>
             </div>
-            <p className="text-[11px] font-bold text-text-primary leading-relaxed line-clamp-2">
-               {explanation || "Awaiting simulation start..."}
-            </p>
+            {explanation && (
+                <div className="px-3 flex items-center gap-2 opacity-30 text-[9px] font-bold text-text-secondary italic">
+                   <Info size={10} /> Active execution step detected
+                </div>
+            )}
          </div>
       </div>
 

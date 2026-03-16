@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Search, Terminal, Sparkles, Box, Zap } from 'lucide-react';
+import { ChevronDown, Search, Terminal, Sparkles, Box, Zap, Play } from 'lucide-react';
+import { TABS } from '../../app/routes';
 import { useAlgorithmStore } from '../../state/useAlgorithmStore';
 import { ALL_ALGORITHMS, ALGORITHM_CATEGORIES } from '../../data/algorithmRegistry';
 import { AlgorithmEntry } from '../../types/algorithmTypes';
@@ -14,25 +15,13 @@ interface AlgorithmDropdownProps {
 export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, disabled }) => {
   const { selectedAlgorithmId, setSelectedAlgorithmId, selectedCategory } = useAlgorithmStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredAlgorithms = useMemo(() => {
-    // Current category filtering
     const categoryIds = (ALGORITHM_CATEGORIES as any)[selectedCategory] || [];
-    const algorithms = categoryIds.map((id: string) => ALL_ALGORITHMS[id]).filter(Boolean) as AlgorithmEntry[];
-    
-    // Also include other algorithms if they match search? 
-    // Usually a dropdown in this context might should show all or just current category.
-    // Given the 3-column layout, we'll keep it to category but allow global search in command palette.
-    
-    if (!searchQuery) return algorithms;
-    return algorithms.filter(algo => 
-      algo.info.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [selectedCategory, searchQuery]);
+    return categoryIds.map((id: string) => ALL_ALGORITHMS[id]).filter(Boolean) as AlgorithmEntry[];
+  }, [selectedCategory]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) {
@@ -79,8 +68,7 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, dis
 
   useEffect(() => {
     if (isOpen) {
-      setSearchQuery('');
-      setTimeout(() => searchInputRef.current?.focus(), 100);
+      setActiveIndex(0);
     }
   }, [isOpen]);
 
@@ -116,78 +104,51 @@ export const AlgorithmDropdown: React.FC<AlgorithmDropdownProps> = ({ label, dis
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-[calc(100%+12px)] z-[100] w-full min-w-[300px] bg-background-primary border border-border rounded-3xl shadow-premium overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-x-4 top-20 md:absolute md:inset-auto md:top-[calc(100%+12px)] md:left-0 md:w-full md:min-w-[300px] z-[100] bg-background-primary border border-border rounded-3xl shadow-premium overflow-hidden"
           >
-            {/* Search Header */}
-            <div className="p-4 bg-background-secondary/50 border-b border-border transition-colors group-focus-within:bg-background-secondary">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary opacity-40" size={14} />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Engine Search..."
-                  value={searchQuery}
-                  onKeyDown={handleKeyDown}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-background-primary border border-border rounded-xl py-2 pl-10 pr-4 text-xs font-bold text-text-primary placeholder:text-text-secondary/40 focus:outline-none focus:border-accent-primary transition-all"
-                />
-              </div>
-            </div>
+
 
             {/* List */}
             <div className="p-2 overflow-y-auto max-h-[320px] custom-scrollbar">
-              {filteredAlgorithms.length > 0 ? (
-                <div className="space-y-1">
-                  {filteredAlgorithms.map((algo, index) => {
-                    const isSelected = selectedAlgorithmId === algo.id;
-                    const isActive = activeIndex === index;
-                    return (
-                      <button
-                        key={algo.id}
-                        onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
-                        onMouseEnter={() => setActiveIndex(index)}
-                        className={cn(
-                          "w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200",
-                          (isSelected || isActive)
-                            ? "bg-accent-primary text-white shadow-glow-indigo"
+              <div className="space-y-0.5">
+                {filteredAlgorithms.map((algo, index) => {
+                  const isSelected = selectedAlgorithmId === algo.id;
+                  const isActive = activeIndex === index;
+                  return (
+                    <button
+                      key={algo.id}
+                      onClick={() => { setSelectedAlgorithmId(algo.id); setIsOpen(false); }}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-200",
+                        isSelected
+                          ? "bg-accent-primary text-white shadow-glow-indigo"
+                          : isActive 
+                            ? "bg-background-secondary text-text-primary"
                             : "text-text-secondary hover:bg-background-secondary hover:text-text-primary"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                           <div className={cn(
-                             "w-1.5 h-1.5 rounded-full transition-colors",
-                             isSelected ? "bg-white" : "bg-text-secondary/20"
-                           )} />
-                           <span className="text-xs font-black tracking-tight">{algo.info.name}</span>
-                        </div>
-                        {isSelected ? (
-                          <Sparkles size={11} className="text-white/80" />
-                        ) : (
-                          <span className="text-[9px] font-mono font-black uppercase tracking-widest opacity-40">{algo.info.complexity?.time.average}</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="py-10 text-center flex flex-col items-center gap-3 opacity-30">
-                  <Box size={24} className="text-text-secondary" />
-                  <p className="text-[10px] font-black uppercase tracking-widest leading-none">Vacuum Detected</p>
-                </div>
-              )}
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                         <div className={cn(
+                           "w-1.5 h-1.5 rounded-full transition-colors",
+                           isSelected ? "bg-white" : "bg-text-secondary/20"
+                         )} />
+                         <span className="text-xs font-bold tracking-tight">{algo.info.name}</span>
+                      </div>
+                      {!isSelected && (
+                        <span className="text-[8px] font-mono font-black uppercase tracking-widest opacity-30">{algo.info.complexity?.time.average}</span>
+                      )}
+                      {isSelected && <Sparkles size={11} className="text-white/80" />}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
-            {/* Command Shortcut Info */}
-            <div className="px-4 py-3 bg-background-secondary/30 border-t border-border flex items-center justify-between">
-               <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest">Global Search</span>
-               <div className="flex items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 rounded border border-border bg-background-primary text-[9px] font-black text-text-primary shadow-sm">⌘</kbd>
-                  <kbd className="px-1.5 py-0.5 rounded border border-border bg-background-primary text-[9px] font-black text-text-primary shadow-sm">K</kbd>
-               </div>
-            </div>
+
           </motion.div>
         )}
       </AnimatePresence>
